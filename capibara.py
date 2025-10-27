@@ -348,6 +348,16 @@ def draw_grass(time_factor):
             sway = np.sin(time_factor * 2.0 + x * 0.05 + dy * 0.1) * 3 * SCALE
             pygame.draw.line(screen, grass_color, (x, y), (x + sway, y - grass_height), int(2 * SCALE))
 
+def draw_shadow(pos, scale):
+    shadow_color = (0, 0, 0, 100)  # semi-transparent black
+    shadow_width = 140 * scale
+    shadow_height = 40 * scale
+    shadow_x = (pos[0] - shadow_width // 2) + 10
+    shadow_y = get_ground_y(pos[0]) - shadow_height // 2 + 60  # slight offset to appear on ground
+    shadow_surf = pygame.Surface((shadow_width, shadow_height), pygame.SRCALPHA)
+    pygame.draw.ellipse(shadow_surf, shadow_color, (0, 0, shadow_width, shadow_height))
+    screen.blit(shadow_surf, (shadow_x, shadow_y))
+
 # Bucle principal
 running = True
 time_elapsed = 0
@@ -459,6 +469,9 @@ while running:
 
     # Dibujar suelo (ajustado) - ahora con césped animado
     draw_grass(time_elapsed)
+
+    # Dibujar sombra
+    draw_shadow(position, SCALE)
 
     # Dibujar capibara
     on_ground = position[1] >= max_center_y
