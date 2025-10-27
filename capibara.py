@@ -482,8 +482,6 @@ while running:
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 running = False
-            elif event.key == pygame.K_s:
-                stop_audio()
 
     # Física
     velocity += gravity * dt
