@@ -143,10 +143,6 @@ def draw_capibara(pos, time_factor):
     # Coordenadas base
     x, y = center_x, center_y
 
-    # Sombra simple
-    shadow_rect = pygame.Rect(int(x - 110 * scale / 2 + 6 * scale), int(y + 28 * scale), int(110 * scale), int(44 * scale))
-    pygame.draw.ellipse(capibara_surf, GRAY, shadow_rect)
-
     # Cuerpo dividido en secciones: torso superior e inferior para más detalle
     body_w = 100 * scale  # Reducir ancho para elipses menos anchas
     body_h = 250 * scale  # Aumentar altura para mejor relación de aspecto (más alargado)
@@ -260,8 +256,8 @@ def draw_capibara(pos, time_factor):
     draw_arm(right_shoulder_x, shoulder_y, phase_offset=1.5)
 
     # Piernas traseras articuladas (cadera -> rodilla -> pie)
-    hip_x_offset = 34 * scale
-    hip_y = int(y + 78 * scale + bob)  # cadera un poco más arriba que la base
+    hip_x_offset = 20 * scale  # Acercar al cuerpo
+    hip_y = int(y + 70 * scale + bob)  # Acercar verticalmente al cuerpo
     upper_leg = 36 * scale
     lower_leg = 38 * scale
     leg_thickness = int(14 * scale)
