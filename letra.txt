@@ -118,8 +118,6 @@ Capi, capi, Capi, capi,
 Capi, capi, Capi, capi, 
 ¡Capibara!
 
-
-
-[30s]
+[5s]
 
 [END]

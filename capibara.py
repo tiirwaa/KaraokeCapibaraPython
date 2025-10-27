@@ -228,7 +228,6 @@ def draw_capibara(pos, time_factor):
         pygame.draw.line(screen, body_color, tuple(elbow.astype(int)), tuple(hand.astype(int)), max(1, arm_thickness - 2))
 
         # articulaciones
-        pygame.draw.circle(screen, body_color, (int(shoulder_x), int(shoulder_y)), int(arm_thickness/1.2))
         pygame.draw.circle(screen, body_color, tuple(elbow.astype(int)), int(arm_thickness/1.1))
         # mano (pequeña elipse)
         hand_rect = pygame.Rect(0, 0, int(paw_w), int(paw_h))
