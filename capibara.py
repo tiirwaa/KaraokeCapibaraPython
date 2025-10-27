@@ -163,7 +163,7 @@ def draw_capibara(pos, time_factor, on_ground):
     # Torso inferior (abdomen/caderas, ligeramente más ancho)
     lower_body_h = 130 * scale  # Aumentar para cubrir más
     lower_body_w = body_w + 10 * scale  # menos ancho para mejor proporción
-    lower_body_rect = pygame.Rect(int(x - lower_body_w/2 + lower_offset_x), int(y - body_h/2 + bob + upper_body_h - 30 * scale), int(lower_body_w), int(lower_body_h))  # Acercar al torso superior
+    lower_body_rect = pygame.Rect(int(x - lower_body_w/2 + lower_offset_x), int(y - body_h/2 + bob + upper_body_h - 60 * scale), int(lower_body_w), int(lower_body_h))  # Acercar al torso superior
     lower_outline_rect = lower_body_rect.inflate(12 * scale, 12 * scale)
     pygame.draw.ellipse(capibara_surf, outline_color, lower_outline_rect)
     pygame.draw.ellipse(capibara_surf, body_color, lower_body_rect)
@@ -226,14 +226,14 @@ def draw_capibara(pos, time_factor, on_ground):
     # función auxiliar para dibujar un brazo dado el hombro y un desfase de fase
     def draw_arm(shoulder_x, shoulder_y, phase_offset):
         # calcular ángulos animados
-        angle = np.sin(time_factor * 3.0 + phase_offset) * 0.5  # en radianes
+        angle = np.sin(time_factor * 1.5 + phase_offset) * 0.5  # en radianes
         # vector hacia abajo con ángulo
         elbow_dx = int(np.sin(angle) * upper_len)
         elbow_dy = int(np.cos(angle) * upper_len)
         elbow = np.array([shoulder_x + elbow_dx, shoulder_y + elbow_dy])
 
         # ángulo para el antebrazo, algo más cerrado
-        angle2 = angle + 0.4 * np.sin(time_factor * 4.0 + phase_offset)
+        angle2 = angle + 0.4 * np.sin(time_factor * 1.5 + phase_offset)
         hand_dx = int(np.sin(angle2) * lower_len)
         hand_dy = int(np.cos(angle2) * lower_len)
         hand = np.array([elbow[0] + hand_dx, elbow[1] + hand_dy])
@@ -264,7 +264,7 @@ def draw_capibara(pos, time_factor, on_ground):
 
     # Piernas traseras articuladas (cadera -> rodilla -> pie)
     hip_x_offset = 20 * scale  # Acercar al cuerpo
-    hip_y = int(y + 70 * scale + bob)  # Acercar verticalmente al cuerpo
+    hip_y = int(y + 60 * scale + bob)  # Acercar verticalmente al cuerpo
     upper_leg = 36 * scale
     lower_leg = 38 * scale
     leg_thickness = int(14 * scale)
@@ -272,7 +272,7 @@ def draw_capibara(pos, time_factor, on_ground):
     def draw_leg(hip_x, hip_y, phase, on_ground, time_factor):
         if on_ground:
             # Target for walking: oscillate x, y at ground
-            target_x = np.sin(time_factor * 2.5 + phase) * 30 * scale
+            target_x = np.sin(time_factor * 1.5 + phase) * 30 * scale
             target_world_x = hip_x + target_x
             target_y = get_ground_y(target_world_x) - hip_y + 100  # Offset para que los pies toquen el suelo
             L1 = upper_leg
@@ -286,11 +286,11 @@ def draw_capibara(pos, time_factor, on_ground):
                 angle2 = a1 + a2
             else:
                 # Fallback to animation
-                angle1 = -0.2 + np.sin(time_factor * 2.5 + phase) * 0.3
-                angle2 = angle1 + 0.9 - 0.3 * np.cos(time_factor * 3.0 + phase)
+                angle1 = -0.2 + np.sin(time_factor * 1.5 + phase) * 0.3
+                angle2 = angle1 + 0.9 - 0.3 * np.cos(time_factor * 1.5 + phase)
         else:
-            angle1 = -0.2 + np.sin(time_factor * 2.5 + phase) * 0.3
-            angle2 = angle1 + 0.9 - 0.3 * np.cos(time_factor * 3.0 + phase)
+            angle1 = -0.2 + np.sin(time_factor * 1.5 + phase) * 0.3
+            angle2 = angle1 + 0.9 - 0.3 * np.cos(time_factor * 1.5 + phase)
 
         knee_dx = int(np.sin(angle1) * upper_leg)
         knee_dy = int(np.cos(angle1) * upper_leg)
