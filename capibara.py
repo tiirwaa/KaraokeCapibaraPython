@@ -128,7 +128,11 @@ def get_ground_y(x):
 def draw_capibara(pos, time_factor, on_ground):
     # Nueva versión: diseño limpio y estilizado inspirado en la imagen de referencia
     scale = SCALE
-    bob = np.sin(time_factor * 2.0) * 4.0 * scale  # pequeño balanceo
+    bob = np.sin(time_factor * 1.5) * 2.0 * scale  # pequeño balanceo, reducido para suavidad
+
+    # Desplazamientos independientes para torso superior e inferior
+    upper_offset_x = np.sin(time_factor * 1.5) * 5 * scale  # movimiento lateral, reducido
+    lower_offset_x = -upper_offset_x  # opuesto para realismo
 
     rotation_angle = np.sin(time_factor * 1.0) * 0.2  # Suavizar el ángulo para menos movimiento lateral
     surf_width = 700
@@ -151,7 +155,7 @@ def draw_capibara(pos, time_factor, on_ground):
     body_h = 250 * scale  # Aumentar altura para mejor relación de aspecto (más alargado)
     # Torso superior (pecho)
     upper_body_h = 120 * scale  # Reducir para mejor proporción
-    upper_body_rect = pygame.Rect(int(x - body_w/2), int(y - body_h/2 + bob + 30 * scale), int(body_w), int(upper_body_h))  # Bajar más
+    upper_body_rect = pygame.Rect(int(x - body_w/2 + upper_offset_x), int(y - body_h/2 + bob + 30 * scale), int(body_w), int(upper_body_h))  # Bajar más
     upper_outline_rect = upper_body_rect.inflate(12 * scale, 12 * scale)
     pygame.draw.ellipse(capibara_surf, outline_color, upper_outline_rect)
     pygame.draw.ellipse(capibara_surf, body_color, upper_body_rect)
@@ -159,7 +163,7 @@ def draw_capibara(pos, time_factor, on_ground):
     # Torso inferior (abdomen/caderas, ligeramente más ancho)
     lower_body_h = 130 * scale  # Aumentar para cubrir más
     lower_body_w = body_w + 10 * scale  # menos ancho para mejor proporción
-    lower_body_rect = pygame.Rect(int(x - lower_body_w/2), int(y - body_h/2 + bob + upper_body_h - 50 * scale), int(lower_body_w), int(lower_body_h))  # Subir más
+    lower_body_rect = pygame.Rect(int(x - lower_body_w/2 + lower_offset_x), int(y - body_h/2 + bob + upper_body_h - 50 * scale), int(lower_body_w), int(lower_body_h))  # Subir más
     lower_outline_rect = lower_body_rect.inflate(12 * scale, 12 * scale)
     pygame.draw.ellipse(capibara_surf, outline_color, lower_outline_rect)
     pygame.draw.ellipse(capibara_surf, body_color, lower_body_rect)
@@ -171,7 +175,7 @@ def draw_capibara(pos, time_factor, on_ground):
     # Cabeza (más pequeña y redondeada, superpuesta)
     head_w = 70 * scale
     head_h = 60 * scale
-    head_x = x
+    head_x = x + upper_offset_x
     head_y = y - body_h/2 + 40 * scale + bob
     head_rect = pygame.Rect(int(head_x - head_w/2), int(head_y - head_h/2), int(head_w), int(head_h))
     pygame.draw.ellipse(capibara_surf, outline_color, head_rect.inflate(10 * scale, 10 * scale))
@@ -252,8 +256,8 @@ def draw_capibara(pos, time_factor, on_ground):
 
     # hombros (ligeramente altos, cerca del pecho)
     shoulder_y = int(head_y + 20 * scale)  # Bajar un poco más
-    left_shoulder_x = int(x - front_x_offset + 6 * scale)
-    right_shoulder_x = int(x + front_x_offset - 6 * scale)
+    left_shoulder_x = int(x - front_x_offset + 6 * scale) + upper_offset_x
+    right_shoulder_x = int(x + front_x_offset - 6 * scale) + upper_offset_x
 
     draw_arm(left_shoulder_x, shoulder_y, phase_offset=0.0)
     draw_arm(right_shoulder_x, shoulder_y, phase_offset=1.5)
@@ -313,8 +317,8 @@ def draw_capibara(pos, time_factor, on_ground):
         pygame.draw.ellipse(capibara_surf, body_color, foot_rect)
 
     # dibujar pierna izquierda y derecha (mirrored)
-    left_hip_x = int(x - hip_x_offset)
-    right_hip_x = int(x + hip_x_offset)
+    left_hip_x = int(x - hip_x_offset) + lower_offset_x
+    right_hip_x = int(x + hip_x_offset) + lower_offset_x
     draw_leg(left_hip_x, hip_y, phase=0.0, on_ground=on_ground, time_factor=time_factor)
     draw_leg(right_hip_x, hip_y, phase=1.6, on_ground=on_ground, time_factor=time_factor)
 
