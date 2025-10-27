@@ -122,14 +122,14 @@ position = np.array([WIDTH // 2, HEIGHT // 2], dtype=float)
 SCALE = 2
 
 # Función para dibujar el capibara con todos los detalles (escalado x3 para tamaño mayor)
-def draw_capibara(pos, time_factor):
+def draw_capibara(pos, time_factor, on_ground):
     # Nueva versión: diseño limpio y estilizado inspirado en la imagen de referencia
     scale = SCALE
     bob = np.sin(time_factor * 2.0) * 4.0 * scale  # pequeño balanceo
 
     rotation_angle = np.sin(time_factor * 1.0) * 0.5  # Aumentar el ángulo para más movimiento lateral
-    surf_width = 600
-    surf_height = 600
+    surf_width = 700
+    surf_height = 700
     capibara_surf = pygame.Surface((surf_width, surf_height), pygame.SRCALPHA)
     center_x = surf_width // 2
     center_y = surf_height // 2
@@ -261,19 +261,34 @@ def draw_capibara(pos, time_factor):
     upper_leg = 36 * scale
     lower_leg = 38 * scale
     leg_thickness = int(14 * scale)
+    ground_y = HEIGHT - 60
 
-    def draw_leg(hip_x, hip_y, phase):
-        # ángulos animados para dar vida: el ángulo base apunta hacia abajo y atrás
-        base_angle = -0.2  # ligera inclinación hacia atrás
-        swing = np.sin(time_factor * 2.5 + phase) * 0.3
-        angle1 = base_angle + swing  # ángulo de muslo
+    def draw_leg(hip_x, hip_y, phase, on_ground, ground_y, time_factor):
+        if on_ground:
+            # Target for walking: oscillate x, y at ground
+            target_x = np.sin(time_factor * 2.5 + phase) * 30 * scale
+            target_y = ground_y - hip_y
+            L1 = upper_leg
+            L2 = lower_leg
+            d = np.sqrt(target_x**2 + target_y**2)
+            if d <= L1 + L2 and d >= abs(L1 - L2):
+                cos_a2 = (target_x**2 + target_y**2 - L1**2 - L2**2) / (2 * L1 * L2)
+                a2 = np.arccos(np.clip(cos_a2, -1, 1))
+                a1 = np.arctan2(target_y, target_x) - np.arctan2(L2 * np.sin(a2), L1 + L2 * np.cos(a2))
+                angle1 = a1
+                angle2 = a1 + a2
+            else:
+                # Fallback to animation
+                angle1 = -0.2 + np.sin(time_factor * 2.5 + phase) * 0.3
+                angle2 = angle1 + 0.9 - 0.3 * np.cos(time_factor * 3.0 + phase)
+        else:
+            angle1 = -0.2 + np.sin(time_factor * 2.5 + phase) * 0.3
+            angle2 = angle1 + 0.9 - 0.3 * np.cos(time_factor * 3.0 + phase)
 
         knee_dx = int(np.sin(angle1) * upper_leg)
         knee_dy = int(np.cos(angle1) * upper_leg)
         knee = np.array([hip_x + knee_dx, hip_y + knee_dy])
 
-        # antepierna más vertical, algo doblada
-        angle2 = angle1 + 0.9 - 0.3 * np.cos(time_factor * 3.0 + phase)
         foot_dx = int(np.sin(angle2) * lower_leg)
         foot_dy = int(np.cos(angle2) * lower_leg)
         foot = np.array([knee[0] + foot_dx, knee[1] + foot_dy])
@@ -297,8 +312,8 @@ def draw_capibara(pos, time_factor):
     # dibujar pierna izquierda y derecha (mirrored)
     left_hip_x = int(x - hip_x_offset)
     right_hip_x = int(x + hip_x_offset)
-    draw_leg(left_hip_x, hip_y, phase=0.0)
-    draw_leg(right_hip_x, hip_y, phase=1.6)
+    draw_leg(left_hip_x, hip_y, phase=0.0, on_ground=on_ground, ground_y=ground_y, time_factor=time_factor)
+    draw_leg(right_hip_x, hip_y, phase=1.6, on_ground=on_ground, ground_y=ground_y, time_factor=time_factor)
 
     # Boceto final: ojos con brillo
     pygame.draw.circle(capibara_surf, WHITE, (int(head_x - eye_x_offset + 3 * scale), int(eye_y - 2 * scale)), int(1 * scale))  # Reducir radio
@@ -410,7 +425,7 @@ while running:
     body_w = 140 * SCALE
     floor_height = 60
     # altura máxima del centro del cuerpo para que la base del cuerpo quede sobre el suelo
-    max_center_y = HEIGHT - floor_height - (body_h / 2)
+    max_center_y = HEIGHT - floor_height - (body_h / 2) - 50  # Subir un poco más el capibara
     if position[1] >= max_center_y:
         position[1] = max_center_y
         velocity[1] *= -0.8
@@ -435,7 +450,8 @@ while running:
     draw_grass(time_elapsed)
 
     # Dibujar capibara
-    draw_capibara(position, time_elapsed)
+    on_ground = position[1] >= max_center_y
+    draw_capibara(position, time_elapsed, on_ground)
 
     # Dibujar letras o instrumental
     if is_instrumental:
