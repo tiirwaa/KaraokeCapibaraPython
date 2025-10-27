@@ -185,8 +185,8 @@ def draw_capibara(pos, time_factor, on_ground):
     new_width = int(frame.get_width() * scale_factor)
     new_height = int(frame.get_height() * scale_factor)
     scaled_frame = pygame.transform.scale(frame, (new_width, new_height))
-    # Center at pos
-    rect = scaled_frame.get_rect(center=(int(pos[0]), int(pos[1])))
+    # Center at pos, lower and slightly left
+    rect = scaled_frame.get_rect(center=(int(pos[0]) - 20, int(pos[1]) + 160))
     screen.blit(scaled_frame, rect)
 
 def draw_grass(time_factor):
