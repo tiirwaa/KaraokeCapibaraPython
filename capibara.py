@@ -197,20 +197,39 @@ def draw_capibara(pos, time_factor, on_ground):
     pygame.draw.circle(capibara_surf, BLACK, (int(head_x + eye_x_offset), int(eye_y)), int(4 * scale))  # Reducir radio
 
     # Nariz y hocico sencillo
-    nose_w, nose_h = 26 * scale, 18 * scale
+    nose_w, nose_h = 18 * scale, 12 * scale  # Reducir tamaño de la nariz
     nose_rect = pygame.Rect(int(head_x - nose_w/2), int(head_y + 2 * scale), int(nose_w), int(nose_h))
     pygame.draw.ellipse(capibara_surf, outline_color, nose_rect.inflate(4 * scale, 4 * scale))
     pygame.draw.ellipse(capibara_surf, nose_color, nose_rect)
 
-    # Boca (línea simple)
-    mouth_start = (int(head_x - 10 * scale), int(head_y + 18 * scale))
-    mouth_end = (int(head_x + 10 * scale), int(head_y + 18 * scale))
-    pygame.draw.arc(capibara_surf, outline_color, (mouth_start[0], mouth_start[1] - 6 * scale, 20 * scale, 12 * scale), 3.14, 0, int(3 * scale))
+    # Boca (forma similar a ancla de barco: dos arcos curvados)
+    mouth_y = head_y + 20 * scale
+   
+    # Línea vertical (barra del ancla)
+    pygame.draw.line(capibara_surf, outline_color, (head_x, mouth_y-10), (head_x, mouth_y + 5 * scale), int(3 * scale))
+    # Arcos laterales (ganchos del ancla)
+    pygame.draw.arc(capibara_surf, outline_color, (head_x - 10 * scale, mouth_y - 10, 10 * scale, 15 * scale), 3.14, 0, int(1 * scale))
+    pygame.draw.arc(capibara_surf, outline_color, (head_x, mouth_y - 10, 10 * scale, 15 * scale), 3.14, 0, int(1 * scale))
 
-    # Bigotes (pocos puntitos alrededor del hocico)
-    for dx in (-20 * scale, -10 * scale, 10 * scale, 20 * scale):
-        pygame.draw.circle(capibara_surf, outline_color, (int(head_x + dx), int(head_y + 6 * scale)), int(1 * scale))  # Reducir radio
+    # Bigotes (whiskers like a cat: 3 on each side)
+    whisker_length = 20 * scale
+    whisker_thickness = 1
+    left_start_x = head_x - 10 * scale
+    left_start_y_base = head_y + 12 * scale  # Bajar los bigotes
+    for i in range(3):
+        y_offset = (i - 1) * 5 * scale  # -5, 0, 5
+        start = (int(left_start_x), int(left_start_y_base + y_offset))
+        end = (int(left_start_x - whisker_length), int(left_start_y_base + y_offset))
+        pygame.draw.line(capibara_surf, outline_color, start, end, whisker_thickness)
+    right_start_x = head_x + 10 * scale
+    right_start_y_base = head_y + 12 * scale  # Bajar los bigotes
+    for i in range(3):
+        y_offset = (i - 1) * 5 * scale
+        start = (int(right_start_x), int(right_start_y_base + y_offset))
+        end = (int(right_start_x + whisker_length), int(right_start_y_base + y_offset))
+        pygame.draw.line(capibara_surf, outline_color, start, end, whisker_thickness)
 
+   
     # Patas delanteras (reposicionadas y con pequeña inclinación hacia dentro)
     paw_w, paw_h = 36 * scale, 24 * scale
     # Ajuste fino: bajar un poco los brazos respecto al pecho y separarlos más
