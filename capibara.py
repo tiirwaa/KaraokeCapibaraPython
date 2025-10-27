@@ -128,8 +128,8 @@ def draw_capibara(pos, time_factor):
     bob = np.sin(time_factor * 2.0) * 4.0 * scale  # pequeño balanceo
 
     rotation_angle = np.sin(time_factor * 1.0) * 0.5  # Aumentar el ángulo para más movimiento lateral
-    surf_width = 500
-    surf_height = 500
+    surf_width = 600
+    surf_height = 600
     capibara_surf = pygame.Surface((surf_width, surf_height), pygame.SRCALPHA)
     center_x = surf_width // 2
     center_y = surf_height // 2
