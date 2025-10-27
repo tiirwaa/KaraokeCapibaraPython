@@ -4,6 +4,8 @@ import sys
 import random
 import winsound
 import os
+import glob
+from svgpathtools import svg2paths
 
 # Deshabilitar audio en SDL para que winsound funcione
 os.environ['SDL_AUDIODRIVER'] = 'dummy'
@@ -13,15 +15,60 @@ os.environ['SDL_INIT_AUDIO'] = '0'
 pygame.display.init()
 pygame.font.init()
 
-# Configuración de la ventana (reduzco tamaño para que no sea demasiado grande)
+# Configuración de la ventana
 WIDTH, HEIGHT = 900, 700
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Capibara Bailando")
 clock = pygame.time.Clock()
 
+# Load Manim frames
+frames_path = '../media/images/animar_svg_manim/'
+frames = [pygame.image.load(os.path.join(frames_path, f)) for f in sorted(os.listdir(frames_path)) if f.endswith('.png')]
+num_frames = len(frames)
+print(f"Loaded {num_frames} frames")
+
+# Load SVG paths for capybara
+paths, attributes = svg2paths('../res/svg/salida_bezier.svg')
+
+# Precompute points for each path for faster drawing
+path_points = []
+for path in paths:
+    total_length = path.length()
+    num_points = 500  # More points for smoothness
+    points = [path.point(t / num_points) for t in range(num_points + 1)]
+    path_points.append(points)
+
+# Get bounding box for centering
+if paths:
+    min_x = min(p.bbox()[0] for p in paths)
+    max_x = max(p.bbox()[1] for p in paths)
+    min_y = min(p.bbox()[2] for p in paths)
+    max_y = max(p.bbox()[3] for p in paths)
+    svg_center_x = (min_x + max_x) / 2
+    svg_center_y = (min_y + max_y) / 2
+else:
+    svg_center_x = 0
+    svg_center_y = 0
+
+# Animation steps matching Manim
+PI = np.pi
+steps = [
+    (0.5, 'rotate', PI/6),
+    (0.5, 'rotate', -PI/3),
+    (0.5, 'rotate', PI/6),
+    (0.3, 'shift', (0, 0.5)),  # UP
+    (0.3, 'shift', (0, -1.0)),  # DOWN
+    (0.3, 'shift', (0, 0.5)),  # UP
+    (0.4, 'rotate', PI/4),
+    (0.4, 'rotate', -PI/2),
+    (0.4, 'rotate', PI/4),
+    (1.0, 'reset', None),
+]
+cycle_time = sum(dur for dur, _, _ in steps)
+
 def play_audio():
     print("Iniciando reproducción de audio")
-    winsound.PlaySound('res/wav/capibara.wav', winsound.SND_FILENAME | winsound.SND_ASYNC | winsound.SND_LOOP)
+    winsound.PlaySound('../res/wav/capibara.wav', winsound.SND_FILENAME | winsound.SND_ASYNC | winsound.SND_LOOP)
 
 def stop_audio():
     print("Deteniendo audio")
@@ -33,7 +80,7 @@ print("Audio iniciado automáticamente")
 
 # Cargar letras de la canción
 lyrics = []
-with open('res/txt/letra.txt', 'r', encoding='utf-8') as f:
+with open('../res/txt/letra.txt', 'r', encoding='utf-8') as f:
     for line in f:
         line = line.strip()
         if line:
@@ -117,9 +164,9 @@ BLUE = (0, 0, 255)
 confetti_particles = []
 
 # Física básica
-gravity = np.array([0.0, 0.5])
+gravity = np.array([0.0, 0.0])  # Disable gravity for centering
 velocity = np.array([0.0, 0.0])
-position = np.array([WIDTH // 2, HEIGHT // 2 + 200], dtype=float)
+position = np.array([WIDTH // 2, HEIGHT // 2], dtype=float)  # Center position in new window
 
 # Escala global (usa la misma en dibujo y física)
 # Reducida para que el capibara entre mejor en la ventana
@@ -128,233 +175,19 @@ SCALE = 2
 def get_ground_y(x):
     return HEIGHT - 150 + (x / WIDTH) * 50
 
-# Función para dibujar el capibara con todos los detalles (escalado x3 para tamaño mayor)
 def draw_capibara(pos, time_factor, on_ground):
-    # Nueva versión: diseño limpio y estilizado inspirado en la imagen de referencia
-    scale = SCALE
-    bob = np.sin(time_factor * 1.5) * 2.0 * scale  # pequeño balanceo, reducido para suavidad
-
-    # Desplazamientos independientes para torso superior e inferior
-    upper_offset_x = np.sin(time_factor * 1.5) * 5 * scale  # movimiento lateral, reducido
-    lower_offset_x = -upper_offset_x  # opuesto para realismo
-
-    rotation_angle = np.sin(time_factor * 1.0) * 0.2  # Suavizar el ángulo para menos movimiento lateral
-    surf_width = 700
-    surf_height = 700
-    capibara_surf = pygame.Surface((surf_width, surf_height), pygame.SRCALPHA)
-    center_x = surf_width // 2
-    center_y = surf_height // 2
-
-    # Paleta simplificada (usar colores ya definidos arriba)
-    body_color = (139, 69, 19)  # más rojizo para parecer más natural
-    outline_color = DARK_BROWN
-    belly_color = (241, 196, 144)
-    nose_color = (200, 150, 140)
-
-    # Coordenadas base
-    x, y = center_x, center_y
-
-    # Cuerpo dividido en secciones: torso superior e inferior para más detalle
-    body_w = 100 * scale  # Reducir ancho para elipses menos anchas
-    body_h = 250 * scale  # Aumentar altura para mejor relación de aspecto (más alargado)
-    # Torso superior (pecho)
-    upper_body_h = 120 * scale  # Reducir para mejor proporción
-    upper_body_rect = pygame.Rect(int(x - body_w/2 + upper_offset_x), int(y - body_h/2 + bob + 30 * scale), int(body_w), int(upper_body_h))  # Bajar más
-    upper_outline_rect = upper_body_rect.inflate(12 * scale, 12 * scale)
-    pygame.draw.ellipse(capibara_surf, outline_color, upper_outline_rect)
-    pygame.draw.ellipse(capibara_surf, body_color, upper_body_rect)
-
-    # Torso inferior (abdomen/caderas, ligeramente más ancho)
-    lower_body_h = 130 * scale  # Aumentar para cubrir más
-    lower_body_w = body_w + 10 * scale  # menos ancho para mejor proporción
-    lower_body_rect = pygame.Rect(int(x - lower_body_w/2 + lower_offset_x), int(y - body_h/2 + bob + upper_body_h - 60 * scale), int(lower_body_w), int(lower_body_h))  # Acercar al torso superior
-    lower_outline_rect = lower_body_rect.inflate(12 * scale, 12 * scale)
-    pygame.draw.ellipse(capibara_surf, outline_color, lower_outline_rect)
-    pygame.draw.ellipse(capibara_surf, body_color, lower_body_rect)
-
-    # Barriga más clara en la parte inferior
-    belly_rect = lower_body_rect.inflate(-40 * scale, -50 * scale)
-    pygame.draw.ellipse(capibara_surf, belly_color, belly_rect)
-
-    # Cabeza (más pequeña y redondeada, superpuesta)
-    head_w = 70 * scale
-    head_h = 60 * scale
-    head_x = x + upper_offset_x
-    head_y = y - body_h/2 + 40 * scale + bob
-    head_rect = pygame.Rect(int(head_x - head_w/2), int(head_y - head_h/2), int(head_w), int(head_h))
-    pygame.draw.ellipse(capibara_surf, outline_color, head_rect.inflate(10 * scale, 10 * scale))
-    pygame.draw.ellipse(capibara_surf, body_color, head_rect)
-
-    # Orejas simples
-    ear_w, ear_h = 26 * scale, 36 * scale
-    left_ear = pygame.Rect(int(head_x - 30 * scale - ear_w/2), int(head_y - 40 * scale), int(ear_w), int(ear_h))
-    right_ear = pygame.Rect(int(head_x + 30 * scale - ear_w/2), int(head_y - 40 * scale), int(ear_w), int(ear_h))
-    pygame.draw.ellipse(capibara_surf, outline_color, left_ear.inflate(6 * scale, 6 * scale))
-    pygame.draw.ellipse(capibara_surf, body_color, left_ear)
-    pygame.draw.ellipse(capibara_surf, outline_color, right_ear.inflate(6 * scale, 6 * scale))
-    pygame.draw.ellipse(capibara_surf, body_color, right_ear)
-
-    # Ojos pequeños y simpáticos
-    eye_y = head_y - 5 * scale
-    eye_x_offset = 18 * scale
-    pygame.draw.circle(capibara_surf, BLACK, (int(head_x - eye_x_offset), int(eye_y)), int(4 * scale))  # Reducir radio
-    pygame.draw.circle(capibara_surf, BLACK, (int(head_x + eye_x_offset), int(eye_y)), int(4 * scale))  # Reducir radio
-
-    # Nariz y hocico sencillo
-    nose_w, nose_h = 18 * scale, 12 * scale  # Reducir tamaño de la nariz
-    nose_rect = pygame.Rect(int(head_x - nose_w/2), int(head_y + 2 * scale), int(nose_w), int(nose_h))
-    pygame.draw.ellipse(capibara_surf, outline_color, nose_rect.inflate(4 * scale, 4 * scale))
-    pygame.draw.ellipse(capibara_surf, nose_color, nose_rect)
-
-    # Boca (forma similar a ancla de barco: dos arcos curvados)
-    mouth_y = head_y + 20 * scale
-   
-    # Línea vertical (barra del ancla)
-    pygame.draw.line(capibara_surf, outline_color, (head_x, mouth_y-10), (head_x, mouth_y + 5 * scale), int(3 * scale))
-    # Arcos laterales (ganchos del ancla)
-    pygame.draw.arc(capibara_surf, outline_color, (head_x - 10 * scale, mouth_y - 10, 10 * scale, 15 * scale), 3.14, 0, int(1 * scale))
-    pygame.draw.arc(capibara_surf, outline_color, (head_x, mouth_y - 10, 10 * scale, 15 * scale), 3.14, 0, int(1 * scale))
-
-    # Bigotes (whiskers like a cat: 3 on each side)
-    whisker_length = 20 * scale
-    whisker_thickness = 1
-    left_start_x = head_x - 10 * scale
-    left_start_y_base = head_y + 12 * scale  # Bajar los bigotes
-    for i in range(3):
-        y_offset = (i - 1) * 5 * scale  # -5, 0, 5
-        start = (int(left_start_x), int(left_start_y_base + y_offset))
-        end = (int(left_start_x - whisker_length), int(left_start_y_base + y_offset))
-        pygame.draw.line(capibara_surf, outline_color, start, end, whisker_thickness)
-    right_start_x = head_x + 10 * scale
-    right_start_y_base = head_y + 12 * scale  # Bajar los bigotes
-    for i in range(3):
-        y_offset = (i - 1) * 5 * scale
-        start = (int(right_start_x), int(right_start_y_base + y_offset))
-        end = (int(right_start_x + whisker_length), int(right_start_y_base + y_offset))
-        pygame.draw.line(capibara_surf, outline_color, start, end, whisker_thickness)
-
-   
-    # Patas delanteras (reposicionadas y con pequeña inclinación hacia dentro)
-    paw_w, paw_h = 36 * scale, 24 * scale
-    # Ajuste fino: bajar un poco los brazos respecto al pecho y separarlos más
-    # Bajar las manos un poco más (ajuste solicitado)
-    front_y = head_y + 26 * scale
-    # Aumentar separación horizontal entre manos
-    front_x_offset = 45 * scale  # Acercar más al cuerpo
-    # Brazos articulados (hombro -> codo -> mano)
-    upper_len = 28 * scale
-    lower_len = 26 * scale
-    arm_thickness = int(12 * scale)
-
-    # función auxiliar para dibujar un brazo dado el hombro y un desfase de fase
-    def draw_arm(shoulder_x, shoulder_y, phase_offset):
-        # calcular ángulos animados
-        angle = np.sin(time_factor * 1.5 + phase_offset) * 0.5  # en radianes
-        # vector hacia abajo con ángulo
-        elbow_dx = int(np.sin(angle) * upper_len)
-        elbow_dy = int(np.cos(angle) * upper_len)
-        elbow = np.array([shoulder_x + elbow_dx, shoulder_y + elbow_dy])
-
-        # ángulo para el antebrazo, algo más cerrado
-        angle2 = angle + 0.4 * np.sin(time_factor * 1.5 + phase_offset)
-        hand_dx = int(np.sin(angle2) * lower_len)
-        hand_dy = int(np.cos(angle2) * lower_len)
-        hand = np.array([elbow[0] + hand_dx, elbow[1] + hand_dy])
-
-        # dibujar segmentos gruesos como líneas con grosor, y círculos en articulaciones
-        pygame.draw.line(capibara_surf, outline_color, (shoulder_x, shoulder_y), tuple(elbow.astype(int)), arm_thickness)
-        pygame.draw.line(capibara_surf, outline_color, tuple(elbow.astype(int)), tuple(hand.astype(int)), arm_thickness)
-        # rellenar interior del brazo (ligero offset) para simular el color del cuerpo
-        # dibujar "relleno" central usando líneas más delgadas en body_color
-        pygame.draw.line(capibara_surf, body_color, (shoulder_x, shoulder_y), tuple(elbow.astype(int)), max(1, arm_thickness - 2))
-        pygame.draw.line(capibara_surf, body_color, tuple(elbow.astype(int)), tuple(hand.astype(int)), max(1, arm_thickness - 2))
-
-        # articulaciones
-        pygame.draw.circle(capibara_surf, body_color, tuple(elbow.astype(int)), int(arm_thickness / 2))  # Revertir a original
-        # mano (pequeña elipse)
-        hand_rect = pygame.Rect(0, 0, int(paw_w), int(paw_h))
-        hand_rect.center = (int(hand[0]), int(hand[1]))
-        pygame.draw.ellipse(capibara_surf, outline_color, hand_rect.inflate(int(4 * scale), int(4 * scale)))
-        pygame.draw.ellipse(capibara_surf, body_color, hand_rect)
-
-    # hombros (ligeramente altos, cerca del pecho)
-    shoulder_y = int(head_y + 20 * scale)  # Bajar un poco más
-    left_shoulder_x = int(x - front_x_offset + 6 * scale) + upper_offset_x
-    right_shoulder_x = int(x + front_x_offset - 6 * scale) + upper_offset_x
-
-    draw_arm(left_shoulder_x, shoulder_y, phase_offset=0.0)
-    draw_arm(right_shoulder_x, shoulder_y, phase_offset=1.5)
-
-    # Piernas traseras articuladas (cadera -> rodilla -> pie)
-    hip_x_offset = 20 * scale  # Acercar al cuerpo
-    hip_y = int(y + 60 * scale + bob)  # Acercar verticalmente al cuerpo
-    upper_leg = 36 * scale
-    lower_leg = 38 * scale
-    leg_thickness = int(14 * scale)
-
-    def draw_leg(hip_x, hip_y, phase, on_ground, time_factor):
-        if on_ground:
-            # Target for walking: oscillate x, y at ground
-            target_x = np.sin(time_factor * 1.5 + phase) * 30 * scale
-            target_world_x = hip_x + target_x
-            target_y = get_ground_y(target_world_x) - hip_y + 100  # Offset para que los pies toquen el suelo
-            L1 = upper_leg
-            L2 = lower_leg
-            d = np.sqrt(target_x**2 + target_y**2)
-            if d <= L1 + L2 and d >= abs(L1 - L2):
-                cos_a2 = (target_x**2 + target_y**2 - L1**2 - L2**2) / (2 * L1 * L2)
-                a2 = np.arccos(np.clip(cos_a2, -1, 1))
-                a1 = np.arctan2(target_y, target_x) - np.arctan2(L2 * np.sin(a2), L1 + L2 * np.cos(a2))
-                angle1 = a1
-                angle2 = a1 + a2
-            else:
-                # Fallback to animation
-                angle1 = -0.2 + np.sin(time_factor * 1.5 + phase) * 0.3
-                angle2 = angle1 + 0.9 - 0.3 * np.cos(time_factor * 1.5 + phase)
-        else:
-            angle1 = -0.2 + np.sin(time_factor * 1.5 + phase) * 0.2
-            angle2 = angle1 + 0.6 - 0.2 * np.cos(time_factor * 1.5 + phase)
-
-        knee_dx = int(np.sin(angle1) * upper_leg)
-        knee_dy = int(np.cos(angle1) * upper_leg)
-        knee = np.array([hip_x + knee_dx, hip_y + knee_dy])
-
-        foot_dx = int(np.sin(angle2) * lower_leg)
-        foot_dy = int(np.cos(angle2) * lower_leg)
-        foot = np.array([knee[0] + foot_dx, knee[1] + foot_dy])
-
-        # dibujar segmentos (contorno) y relleno interior
-        pygame.draw.line(capibara_surf, outline_color, (hip_x, hip_y), tuple(knee.astype(int)), leg_thickness)
-        pygame.draw.line(capibara_surf, outline_color, tuple(knee.astype(int)), tuple(foot.astype(int)), leg_thickness)
-        pygame.draw.line(capibara_surf, body_color, (hip_x, hip_y), tuple(knee.astype(int)), max(1, leg_thickness - 2))
-        pygame.draw.line(capibara_surf, body_color, tuple(knee.astype(int)), tuple(foot.astype(int)), max(1, leg_thickness - 2))
-
-        # articulaciones
-        pygame.draw.circle(capibara_surf, body_color, (int(hip_x), int(hip_y)), int(leg_thickness / 2))
-        pygame.draw.circle(capibara_surf, body_color, tuple(knee.astype(int)), int(leg_thickness / 2))
-
-        # pie como pequeña elipse
-        foot_rect = pygame.Rect(0, 0, int(34 * scale), int(18 * scale))
-        foot_rect.center = (int(foot[0]), int(foot[1]))
-        pygame.draw.ellipse(capibara_surf, outline_color, foot_rect.inflate(int(4 * scale), int(4 * scale)))
-        pygame.draw.ellipse(capibara_surf, body_color, foot_rect)
-
-    # dibujar pierna izquierda y derecha (mirrored)
-    left_hip_x = int(x - hip_x_offset) + lower_offset_x
-    right_hip_x = int(x + hip_x_offset) + lower_offset_x
-    draw_leg(left_hip_x, hip_y, phase=0.0, on_ground=on_ground, time_factor=time_factor)
-    draw_leg(right_hip_x, hip_y, phase=1.6, on_ground=on_ground, time_factor=time_factor)
-
-    # Boceto final: ojos con brillo
-    pygame.draw.circle(capibara_surf, WHITE, (int(head_x - eye_x_offset + 3 * scale), int(eye_y - 2 * scale)), int(1 * scale))  # Reducir radio
-    pygame.draw.circle(capibara_surf, WHITE, (int(head_x + eye_x_offset + 3 * scale), int(eye_y - 2 * scale)), int(1 * scale))  # Reducir radio
-
-    rotated_surf = pygame.transform.rotate(capibara_surf, np.degrees(rotation_angle))
-    # Simular perspectiva 3D: reducir el ancho cuando gira para dar ilusión de profundidad
-    scale_x = 1 - abs(rotation_angle) * 0.4
-    scaled_width = int(rotated_surf.get_width() * scale_x)
-    scaled_surf = pygame.transform.scale(rotated_surf, (scaled_width, rotated_surf.get_height()))
-    screen.blit(scaled_surf, (pos[0] - scaled_surf.get_width()//2, pos[1] - rotated_surf.get_height()//2))
+    # Calculate frame index based on time
+    t = time_factor % cycle_time
+    frame_index = int((t / cycle_time) * num_frames) % num_frames
+    frame = frames[frame_index]
+    # Scale down to match Pygame scale (Manim scale=3, Pygame effective scale=1)
+    scale_factor = 1 / 3  # Since Manim is 3x larger
+    new_width = int(frame.get_width() * scale_factor)
+    new_height = int(frame.get_height() * scale_factor)
+    scaled_frame = pygame.transform.scale(frame, (new_width, new_height))
+    # Center at pos
+    rect = scaled_frame.get_rect(center=(int(pos[0]), int(pos[1])))
+    screen.blit(scaled_frame, rect)
 
 def draw_grass(time_factor):
     grass_height = 20 * SCALE
@@ -483,9 +316,9 @@ while running:
             if event.key == pygame.K_ESCAPE:
                 running = False
 
-    # Física
-    velocity += gravity * dt
-    position += velocity * dt
+    # Física (disabled for centering)
+    # velocity += gravity * dt
+    # position += velocity * dt
 
     # Update confetti
     for particle in confetti_particles[:]:
@@ -495,20 +328,17 @@ while running:
         if particle['y'] > HEIGHT + 10:
             confetti_particles.remove(particle)
 
-    # Ajustar límites en función de la escala y el tamaño del cuerpo
-    body_h = 220 * SCALE
-    body_w = 140 * SCALE
-    floor_height = 140
-    # altura máxima del centro del cuerpo para que la base del cuerpo quede sobre el suelo
-    max_center_y = HEIGHT - floor_height - (body_h / 2) + 30  # Bajar más el capibara
-    if position[1] >= max_center_y:
-        position[1] = max_center_y
-        velocity[1] *= -0.8
-
-    # límites laterales según el ancho del cuerpo
-    side_margin = int(body_w / 2 + 20)
-    if position[0] <= side_margin or position[0] >= WIDTH - side_margin:
-        velocity[0] *= -1
+    # Límites (disabled for centering)
+    # body_h = 220 * SCALE
+    # body_w = 140 * SCALE
+    # floor_height = 140
+    # max_center_y = HEIGHT - floor_height - (body_h / 2) + 30
+    # if position[1] >= max_center_y:
+    #     position[1] = max_center_y
+    #     velocity[1] *= -0.8
+    # side_margin = int(body_w / 2 + 20)
+    # if position[0] <= side_margin or position[0] >= WIDTH - side_margin:
+    #     velocity[0] *= -1
 
     # Avanzar palabra actual en letras
     if not is_instrumental and current_word_data:
@@ -528,7 +358,7 @@ while running:
     draw_shadow(position, SCALE, time_elapsed)
 
     # Dibujar capibara
-    on_ground = position[1] >= max_center_y
+    on_ground = True  # Static, no physics
     draw_capibara(position, time_elapsed, on_ground)
 
     # Draw confetti

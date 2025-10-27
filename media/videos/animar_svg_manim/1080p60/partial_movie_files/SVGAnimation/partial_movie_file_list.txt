@@ -1,0 +1,13 @@
+# This file is used internally by FFMPEG.
+file 'file:C:/Users/Andrey/Documentos/capibara/media/videos/animar_svg_manim/1080p60/partial_movie_files/SVGAnimation/3977891868_1839128356_1296004207.mp4'
+file 'file:C:/Users/Andrey/Documentos/capibara/media/videos/animar_svg_manim/1080p60/partial_movie_files/SVGAnimation/2852726489_1225314876_3187948177.mp4'
+file 'file:C:/Users/Andrey/Documentos/capibara/media/videos/animar_svg_manim/1080p60/partial_movie_files/SVGAnimation/2852726489_3082701077_3187948177.mp4'
+file 'file:C:/Users/Andrey/Documentos/capibara/media/videos/animar_svg_manim/1080p60/partial_movie_files/SVGAnimation/2852726489_1010560857_3187948177.mp4'
+file 'file:C:/Users/Andrey/Documentos/capibara/media/videos/animar_svg_manim/1080p60/partial_movie_files/SVGAnimation/2852726489_2061303841_3187948177.mp4'
+file 'file:C:/Users/Andrey/Documentos/capibara/media/videos/animar_svg_manim/1080p60/partial_movie_files/SVGAnimation/2852726489_173948428_3187948177.mp4'
+file 'file:C:/Users/Andrey/Documentos/capibara/media/videos/animar_svg_manim/1080p60/partial_movie_files/SVGAnimation/2852726489_206009179_3187948177.mp4'
+file 'file:C:/Users/Andrey/Documentos/capibara/media/videos/animar_svg_manim/1080p60/partial_movie_files/SVGAnimation/2852726489_1517165966_3187948177.mp4'
+file 'file:C:/Users/Andrey/Documentos/capibara/media/videos/animar_svg_manim/1080p60/partial_movie_files/SVGAnimation/2852726489_1347689358_3187948177.mp4'
+file 'file:C:/Users/Andrey/Documentos/capibara/media/videos/animar_svg_manim/1080p60/partial_movie_files/SVGAnimation/2852726489_2974732886_3187948177.mp4'
+file 'file:C:/Users/Andrey/Documentos/capibara/media/videos/animar_svg_manim/1080p60/partial_movie_files/SVGAnimation/2852726489_557114702_3187948177.mp4'
+file 'file:C:/Users/Andrey/Documentos/capibara/media/videos/animar_svg_manim/1080p60/partial_movie_files/SVGAnimation/2852726489_1839128356_2492067990.mp4'

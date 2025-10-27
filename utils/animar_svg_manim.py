@@ -1,47 +1,41 @@
 from manim import *
-from svgpathtools import svg2paths
-import numpy as np
 
 class SVGAnimation(Scene):
     def construct(self):
-        # Cargar path desde el SVG
-        paths, _ = svg2paths('res/svg/salida_bezier.svg')
-        if not paths:
-            self.add(Text("No se encontraron paths en el SVG."))
-            return
+        # Cargar el SVG completo usando SVGMobject
+        svg = SVGMobject('res/svg/salida_bezier.svg')
         
-        path = paths[0]  # Usar la primera ruta
+        # Cambiar el color del trazo a blanco para que sea visible en el fondo negro
+        svg.set_stroke(WHITE, 2)
+        svg.set_fill(opacity=0)  # Sin relleno
         
-        # Obtener bounding box para escalar y centrar
-        bbox = path.bbox()
-        width = bbox[1] - bbox[0]
-        height = bbox[3] - bbox[2]
-        scale_factor = min(14 / width, 8 / height) if width > 0 and height > 0 else 1
-        center_x = (bbox[0] + bbox[1]) / 2
-        center_y = (bbox[2] + bbox[3]) / 2
+        # Escalar y centrar el SVG
+        svg.scale(3)  # Match the scale in capibara.py for consistent debugging
+        svg.move_to(ORIGIN)
         
-        # Convertir el path a puntos para Manim, escalados y centrados
-        num_points = 200  # Más puntos para suavidad
-        points = [path.point(t / num_points) for t in range(num_points + 1)]
-        # Escalar y centrar
-        scaled_points = [(p.real - center_x) * scale_factor for p in points]
-        scaled_imag = [(p.imag - center_y) * scale_factor for p in points]
-        manim_points = [np.array([scaled_points[i], scaled_imag[i], 0]) for i in range(len(points))]
+        # Mostrar el SVG estático inicialmente
+        self.add(svg)
+        self.wait(1)
         
-        # Crear el objeto VMobject para el path
-        svg_path = VMobject()
-        svg_path.set_points_as_corners(manim_points)
-        svg_path.set_stroke(WHITE, 3)  # Grosor de línea
+        # Animación de baile: rotaciones y movimientos
+        # Girar a la izquierda
+        self.play(Rotate(svg, angle=PI/6, run_time=0.5))
+        # Girar a la derecha
+        self.play(Rotate(svg, angle=-PI/3, run_time=0.5))
+        # Volver al centro
+        self.play(Rotate(svg, angle=PI/6, run_time=0.5))
         
-        # Animar: dibujar el path desde el inicio
-        self.play(Create(svg_path), run_time=2)
+        # Mover arriba y abajo (rebote)
+        self.play(svg.animate.shift(UP * 0.5), run_time=0.3)
+        self.play(svg.animate.shift(DOWN * 1.0), run_time=0.3)
+        self.play(svg.animate.shift(UP * 0.5), run_time=0.3)
         
-        # Crear un punto que se mueva a lo largo del path
-        dot = Dot(manim_points[0], color=RED, radius=0.1)
-        self.add(dot)
+        # Más giros para simular baile
+        self.play(Rotate(svg, angle=PI/4, run_time=0.4))
+        self.play(Rotate(svg, angle=-PI/2, run_time=0.4))
+        self.play(Rotate(svg, angle=PI/4, run_time=0.4))
         
-        # Animar el punto moviéndose a lo largo del path
-        self.play(MoveAlongPath(dot, svg_path), run_time=4, rate_func=linear)
+        # Final: volver a posición original
+        self.play(svg.animate.move_to(ORIGIN).rotate(0), run_time=1)
         
-        # Pausa final
         self.wait(1)
