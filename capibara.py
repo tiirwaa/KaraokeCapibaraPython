@@ -289,8 +289,8 @@ def draw_capibara(pos, time_factor, on_ground):
                 angle1 = -0.2 + np.sin(time_factor * 1.5 + phase) * 0.3
                 angle2 = angle1 + 0.9 - 0.3 * np.cos(time_factor * 1.5 + phase)
         else:
-            angle1 = -0.2 + np.sin(time_factor * 1.5 + phase) * 0.3
-            angle2 = angle1 + 0.9 - 0.3 * np.cos(time_factor * 1.5 + phase)
+            angle1 = -0.2 + np.sin(time_factor * 1.5 + phase) * 0.2
+            angle2 = angle1 + 0.6 - 0.2 * np.cos(time_factor * 1.5 + phase)
 
         knee_dx = int(np.sin(angle1) * upper_leg)
         knee_dy = int(np.cos(angle1) * upper_leg)
