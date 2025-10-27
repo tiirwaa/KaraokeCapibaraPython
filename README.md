@@ -28,20 +28,29 @@ Este proyecto es una animación gráfica interactiva en Python que muestra un ca
 ## Uso
 Ejecuta el script principal:
 ```
-python capibara.py
+python main.py
 ```
 - La ventana gráfica se abrirá mostrando la animación.
 - Presiona ESC para salir.
 - Presiona S para detener el audio.
 
 ## Archivos
-- `capibara.py`: Script principal con la lógica de animación y dibujo.
+- `main.py`: Punto de entrada principal que inicializa y ejecuta el juego.
+- `game.py`: Clase Game que coordina el bucle principal, eventos y componentes.
+- `capibara_model.py`: Clase Capibara para dibujar y animar el personaje.
+- `physics.py`: Clase Physics para manejar gravedad, velocidad y colisiones.
+- `lyrics.py`: Clase LyricsManager para cargar y sincronizar letras de la canción.
+- `audio.py`: Clase AudioManager (Singleton) para manejar reproducción de audio.
 - `letra.txt`: Archivo de texto con las letras de la canción y marcadores de tiempo para instrumentales.
 - `plan.md`: Documento con el plan detallado del proyecto, incluyendo diseño y pasos de implementación.
 - `capibara.wav`: Archivo de audio de la canción (no incluido, debe proporcionarse).
 
-## Cómo Funciona
-El script carga las letras desde `letra.txt`, procesa eventos (letras o instrumentales) con duraciones. Usa un bucle principal para actualizar física, animar el capibara, dibujar elementos y sincronizar con el audio. El capibara se dibuja usando formas vectoriales en Pygame, con animaciones basadas en trigonometría y tiempo.
+## Patrones de Diseño
+El código ha sido refactorizado para mejorar la mantenibilidad y separación de responsabilidades:
+- **Singleton**: AudioManager para asegurar una única instancia de manejo de audio.
+- **Modelo-Vista-Controlador (MVC)**: Separación entre modelo (Capibara, Physics), vista (dibujo en Game) y controlador (Game maneja eventos).
+- **Composición**: Game compone AudioManager, LyricsManager, Capibara y Physics.
+- **Encapsulación**: Cada clase maneja su propia responsabilidad (dibujo, física, audio, letras).
 
 ## Notas
 - El audio usa winsound, que es específico de Windows. Para otros sistemas, modifica el código para usar otra librería como pygame.mixer.
