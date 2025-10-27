@@ -1,0 +1,125 @@
+[11.5s]
+Capi, capi, Capi, capi,
+¡Capibara!
+Capi, capi, Capi, capi,
+¡Capibara!
+Te presento un amigo,
+Es un capibara.
+
+Su nombre es Capi y de apellido Bara,
+Es color marrón, también un roedor.
+
+Es mi nuevo amigo,
+Capi,
+capibara,
+Capi, capi, Capi, capi, 
+¡Capibara!
+Capi, capi, Capi, capi, 
+¡Capibara!
+Capi, capi, Capi, capi, 
+¡Capibara!
+Capi, capi, Capi, capi, 
+¡Capibara!
+
+[7s]
+
+Te presento un amigo,
+Es un capibara.
+
+Su nombre es capi
+y de apellido Bara,
+Es color marrón, 
+también un roedor.
+
+Es mi nuevo amigo,
+Capi, 
+capibara,
+Capi, capi, Capi, capi, 
+¡Capibara!
+Capi, capi, Capi, capi, 
+¡Capibara!
+Capi, capi, Capi, capi, 
+¡Capibara!
+Capi, capi, Capi, capi, 
+¡Capibara!
+
+Capi, bara, 
+capi, bara, 
+capi, bara, 
+capi, bara,
+capi, 
+bara, 
+capi, capi, bara, 
+capi, capi, capi, bara,
+capi, capi, capi, capi, bara,
+
+
+Capi, bara, 
+capi, bara, 
+capi, bara, 
+capi, bara,
+capi, 
+bara, 
+capi, capi, bara, 
+capi, capi, capi, bara,
+capi, capi, capi, capi, bara,
+
+[6s]
+
+Capi, capi, Capi, capi, 
+¡Capibara!
+Capi, capi, Capi, capi, 
+¡Capibara!
+
+Te presento un amigo,
+Es un capibara.
+
+Su nombre es Capi y de apellido Bara,
+Es color marrón, también un roedor.
+
+Es mi nuevo amigo,
+Capi,
+capibara,
+Capi, capi, Capi, capi, 
+¡Capibara!
+Capi, capi, Capi, capi, 
+¡Capibara!
+Capi, capi, Capi, capi, 
+¡Capibara!
+Capi, capi, Capi, capi, 
+¡Capibara!
+
+Capi, bara, 
+capi, bara, 
+capi, bara, 
+capi, bara,
+capi, 
+bara, 
+capi, capi, bara, 
+capi, capi, capi, bara,
+capi, capi, capi, capi, bara,
+
+Capi, bara, 
+capi, bara, 
+capi, bara, 
+capi, bara,
+Capi, bara, 
+capi, bara, 
+capi, bara, 
+capi, bara,
+capi, 
+bara, 
+capi, capi, bara, 
+capi, capi, capi, bara,
+capi, capi, capi, capi, bara,
+
+Capi, capi, Capi, capi, 
+¡Capibara!
+Capi, capi, Capi, capi, 
+¡Capibara!
+
+
+
+[30s]
+
+[END]
