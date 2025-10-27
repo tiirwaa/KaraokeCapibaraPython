@@ -5,8 +5,8 @@ import math
 import numpy as np
 from svgpathtools import svg2paths
 
-SVG_PATH = 'res/svg/salida_bezier.svg'
-OUTPUT_JSON = 'res/txt/landmarks.json'
+SVG_PATH = '../res/svg/salida_bezier.svg'
+OUTPUT_JSON = '../res/txt/landmarks.json'
 DEFAULT_WINDOW_SIZE = (1200, 900)
 BACKGROUND = (30, 30, 30)
 DRAW_COLOR = (240, 240, 240)
@@ -31,6 +31,11 @@ LABELS = [
     'pecho',
     'abdomen',
     'espalda',
+    'anteojo izquierdo',
+    'anteojo derecho',
+    'cachete izquierdo',
+    'cachete derecho',
+    'frente',
 ]
 
 SAMPLE_POINTS_PER_PATH = 400
@@ -111,6 +116,16 @@ def run_picker():
 
     renderer = SVGRenderer(SVG_PATH, window_size)
 
+    # Load existing points
+    existing_points = {}
+    try:
+        with open(OUTPUT_JSON, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            for p in data.get('labels', []):
+                existing_points[p['label']] = p
+    except FileNotFoundError:
+        pass  # No existing file
+
     points = []  # list of dicts: {label, screen, svg}
     idx = 0
 
@@ -118,6 +133,7 @@ def run_picker():
         'Instrucciones:',
         'Click izquierdo: marcar punto',
         'Click derecho: deshacer última marca',
+        "o: omitir y usar punto guardado si existe",
         "Teclas: s=guardar, q o ESC=salir",
     ]
 
@@ -133,6 +149,13 @@ def run_picker():
                     # guardar
                     save_points(points)
                     print(f'Saved {len(points)} points to {OUTPUT_JSON}')
+                elif event.key == pygame.K_o:
+                    if idx < len(LABELS) and LABELS[idx] in existing_points:
+                        points.append(existing_points[LABELS[idx]])
+                        print(f"Skipped {LABELS[idx]}, using saved point")
+                        idx += 1
+                    else:
+                        print("No saved point for current label to skip to.")
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:  # left click -> add
                     if idx < len(LABELS):
@@ -159,9 +182,21 @@ def run_picker():
             txt = font.render(p['label'], True, FONT_COLOR)
             screen.blit(txt, (sx + 8, sy - 8))
 
+        # Draw saved points not yet marked
+        for label, p in existing_points.items():
+            if label not in [pt['label'] for pt in points]:
+                sx, sy = p['screen']
+                pygame.draw.circle(screen, (100, 100, 255), (sx, sy), 4)
+                txt = font.render(f"{label} (guardado)", True, (150, 150, 255))
+                screen.blit(txt, (sx + 8, sy - 8))
+
         # Draw current label prompt
         if idx < len(LABELS):
-            prompt = f"Marcar: {LABELS[idx]} ({idx+1}/{len(LABELS)})"
+            label = LABELS[idx]
+            has_saved = label in existing_points
+            prompt = f"Marcar: {label} ({idx+1}/{len(LABELS)})"
+            if has_saved:
+                prompt += " (o para usar guardado)"
         else:
             prompt = 'Todos los puntos marcados. Presiona s para guardar.'
         prompt_surf = font.render(prompt, True, FONT_COLOR)

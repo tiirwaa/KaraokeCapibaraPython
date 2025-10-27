@@ -8,9 +8,9 @@ import json
 # Add parent directory to sys.path for relative imports
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
-from audio import AudioManager
-from lyrics import LyricsManager
-from capibara_model import Capibara
+from src.audio import AudioManager
+from src.lyrics import LyricsManager
+from src.capibara_model import Capibara
 
 class Game:
     def __init__(self, width=1024, height=768):

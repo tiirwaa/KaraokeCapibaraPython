@@ -150,7 +150,7 @@ class SVGAnimation(Scene):
         feet = VGroup(*([s for s in (left_foot_subs + right_foot_subs) if s is not None]))
 
         # Mapear otros puntos nuevos
-        head_idx = None
+        head_idxs = []
         neck_idx = None
         tail_idx = None
         left_ear_idx = None
@@ -162,9 +162,14 @@ class SVGAnimation(Scene):
         chest_idx = None
         abdomen_idx = None
         back_idx = None
+        left_glasses_idxs = []
+        right_glasses_idxs = []
+        left_cheek_idxs = []
+        right_cheek_idxs = []
+        forehead_idxs = []
 
         if 'cabeza' in labels:
-            head_idx = nearest_path_indices(labels['cabeza'], k=1)[0]
+            head_idxs = nearest_path_indices(labels['cabeza'], k=10)  # Más paths para cubrir toda la cara y pelo
         if 'cuello' in labels:
             neck_idx = nearest_path_indices(labels['cuello'], k=1)[0]
         if 'cola' in labels:
@@ -187,14 +192,39 @@ class SVGAnimation(Scene):
             abdomen_idx = nearest_path_indices(labels['abdomen'], k=1)[0]
         if 'espalda' in labels:
             back_idx = nearest_path_indices(labels['espalda'], k=1)[0]
+        if 'anteojo izquierdo' in labels:
+            left_glasses_idxs = nearest_path_indices(labels['anteojo izquierdo'], k=5)
+        if 'anteojo derecho' in labels:
+            right_glasses_idxs = nearest_path_indices(labels['anteojo derecho'], k=5)
+        if 'cachete izquierdo' in labels:
+            left_cheek_idxs = nearest_path_indices(labels['cachete izquierdo'], k=2)
+        if 'cachete derecho' in labels:
+            right_cheek_idxs = nearest_path_indices(labels['cachete derecho'], k=2)
+        if 'frente' in labels:
+            forehead_idxs = nearest_path_indices(labels['frente'], k=5)
 
-        # Reservar índices usados
-        for idx in [head_idx, neck_idx, tail_idx, left_ear_idx, right_ear_idx, left_eye_idx, right_eye_idx, nose_idx, mouth_idx, chest_idx, abdomen_idx, back_idx]:
+        # Excluir índices de anteojos de la cabeza para evitar conflicto de colores
+        head_idxs = [idx for idx in head_idxs if idx not in left_glasses_idxs and idx not in right_glasses_idxs]
+
+        # Excluir índices de cachetes y frente de anteojos para evitar colorear partes equivocadas
+        left_glasses_idxs = [idx for idx in left_glasses_idxs if idx not in left_cheek_idxs and idx not in right_cheek_idxs and idx not in forehead_idxs and idx != left_ear_idx and idx != right_ear_idx]
+        right_glasses_idxs = [idx for idx in right_glasses_idxs if idx not in left_cheek_idxs and idx not in right_cheek_idxs and idx not in forehead_idxs and idx != left_ear_idx and idx != right_ear_idx]
+
+        # Excluir índices de ojos de cachetes y frente para evitar colorear partes equivocadas
+        left_cheek_idxs = [idx for idx in left_cheek_idxs if idx != left_eye_idx and idx != right_eye_idx and idx not in left_glasses_idxs and idx not in right_glasses_idxs and idx != left_ear_idx and idx != right_ear_idx]
+        right_cheek_idxs = [idx for idx in right_cheek_idxs if idx != left_eye_idx and idx != right_eye_idx and idx not in left_glasses_idxs and idx not in right_glasses_idxs and idx != left_ear_idx and idx != right_ear_idx]
+        forehead_idxs = [idx for idx in forehead_idxs if idx != left_eye_idx and idx != right_eye_idx and idx not in left_glasses_idxs and idx not in right_glasses_idxs and idx != left_ear_idx and idx != right_ear_idx]
+
+        # Debug prints after exclusions
+        print(' forehead path centers=', [path_centers[i] for i in forehead_idxs])
+        print(' right_glasses path centers=', [path_centers[i] for i in right_glasses_idxs])
+        print(' left_glasses path centers=', [path_centers[i] for i in left_glasses_idxs])
+        for idx in head_idxs + [neck_idx, tail_idx, left_ear_idx, right_ear_idx, left_eye_idx, right_eye_idx, nose_idx, mouth_idx, chest_idx, abdomen_idx, back_idx] + left_cheek_idxs + right_cheek_idxs + forehead_idxs + left_glasses_idxs + right_glasses_idxs:
             if idx is not None and idx not in used_idxs:
                 used_idxs.add(idx)
 
         # Crear submobjects
-        head_sub = submobj(head_idx) if head_idx is not None else None
+        head_subs = [submobj(i) for i in head_idxs if submobj(i) is not None]
         neck_sub = submobj(neck_idx) if neck_idx is not None else None
         tail_sub = submobj(tail_idx) if tail_idx is not None else None
         left_ear_sub = submobj(left_ear_idx) if left_ear_idx is not None else None
@@ -206,13 +236,45 @@ class SVGAnimation(Scene):
         chest_sub = submobj(chest_idx) if chest_idx is not None else None
         abdomen_sub = submobj(abdomen_idx) if abdomen_idx is not None else None
         back_sub = submobj(back_idx) if back_idx is not None else None
+        left_glasses_subs = [submobj(i) for i in left_glasses_idxs if submobj(i) is not None]
+        right_glasses_subs = [submobj(i) for i in right_glasses_idxs if submobj(i) is not None]
+        left_cheek_subs = [submobj(i) for i in left_cheek_idxs if submobj(i) is not None]
+        right_cheek_subs = [submobj(i) for i in right_cheek_idxs if submobj(i) is not None]
+        forehead_subs = [submobj(i) for i in forehead_idxs if submobj(i) is not None]
 
         # Crear grupos
-        head_group = VGroup(*[s for s in [head_sub, neck_sub, left_ear_sub, right_ear_sub, left_eye_sub, right_eye_sub, nose_sub, mouth_sub] if s is not None])
+        head_group = VGroup(*[s for s in head_subs + [neck_sub, left_ear_sub, right_ear_sub, left_eye_sub, right_eye_sub, nose_sub, mouth_sub] + left_cheek_subs + right_cheek_subs + forehead_subs if s is not None])
         body_group = VGroup(*[s for s in [chest_sub, abdomen_sub, back_sub] if s is not None])
         tail_group = VGroup(tail_sub) if tail_sub else VGroup()
+        glasses_group = VGroup(*[s for s in left_glasses_subs + right_glasses_subs if s is not None])
 
-        # Usar landmarks para puntos de rotación (coxofemorales)
+        # Asignar colores naturales
+        if head_group:
+            head_group.set_fill("#D2691E", opacity=1)  # Chocolate (marrón claro)
+        if body_group:
+            body_group.set_fill("#8B4513", opacity=1)  # SaddleBrown (marrón)
+        if legs:
+            legs.set_fill("#654321", opacity=1)  # Dark brown
+        if tail_group:
+            tail_group.set_fill("#D2691E", opacity=1)  # Chocolate
+
+        # Colores específicos para ojos, nariz, boca
+        if left_eye_sub:
+            left_eye_sub.set_fill(BLACK, opacity=1)
+        if right_eye_sub:
+            right_eye_sub.set_fill(BLACK, opacity=1)
+        if nose_sub:
+            nose_sub.set_fill("#FFB6C1", opacity=1)  # Light pink
+        if mouth_sub:
+            mouth_sub.set_fill("#FFB6C1", opacity=1)  # Light pink
+
+        # Asegurar que los anteojos sean negros
+        for sub in left_glasses_subs:
+            sub.set_fill(BLACK, opacity=1)
+        for sub in right_glasses_subs:
+            sub.set_fill(BLACK, opacity=1)
+
+        # Forzar regeneración de cache 2
         left_joint = labels.get('coxofemoral_izquierda', (0,0))
         right_joint = labels.get('coxofemoral_derecha', (0,0))
         # Escalar por 5 (como el SVG) y asumir origen en (0,0)
@@ -225,7 +287,7 @@ class SVGAnimation(Scene):
         tail_center = labels.get('cola', (0,0))
         tail_point = np.array([tail_center[0] * 5, tail_center[1] * 5, 0])
 
-        # Mostrar el SVG estático inicialmente
+        print("Regenerating animation with updated glasses coloring 3")
         self.add(svg)
         self.wait(1)
 
