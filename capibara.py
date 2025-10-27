@@ -348,15 +348,23 @@ def draw_grass(time_factor):
             sway = np.sin(time_factor * 2.0 + x * 0.05 + dy * 0.1) * 3 * SCALE
             pygame.draw.line(screen, grass_color, (x, y), (x + sway, y - grass_height), int(2 * SCALE))
 
-def draw_shadow(pos, scale):
+def draw_shadow(pos, scale, time_factor):
     shadow_color = (0, 0, 0, 100)  # semi-transparent black
     shadow_width = 140 * scale
     shadow_height = 40 * scale
-    shadow_x = (pos[0] - shadow_width // 2) + 10
-    shadow_y = get_ground_y(pos[0]) - shadow_height // 2 + 60  # slight offset to appear on ground
     shadow_surf = pygame.Surface((shadow_width, shadow_height), pygame.SRCALPHA)
     pygame.draw.ellipse(shadow_surf, shadow_color, (0, 0, shadow_width, shadow_height))
-    screen.blit(shadow_surf, (shadow_x, shadow_y))
+
+    # Apply same deformation as capibara for realism
+    rotation_angle = np.sin(time_factor * 1.0) * 0.2
+    rotated_shadow = pygame.transform.rotate(shadow_surf, np.degrees(rotation_angle))
+    scale_x = 1 - abs(rotation_angle) * 0.4
+    scaled_width = int(rotated_shadow.get_width() * scale_x)
+    scaled_shadow = pygame.transform.scale(rotated_shadow, (scaled_width, rotated_shadow.get_height()))
+
+    shadow_x = pos[0] - scaled_shadow.get_width() // 2 + 10
+    shadow_y = get_ground_y(pos[0]) - scaled_shadow.get_height() // 2 + 60
+    screen.blit(scaled_shadow, (shadow_x, shadow_y))
 
 # Bucle principal
 running = True
@@ -471,7 +479,7 @@ while running:
     draw_grass(time_elapsed)
 
     # Dibujar sombra
-    draw_shadow(position, SCALE)
+    draw_shadow(position, SCALE, time_elapsed)
 
     # Dibujar capibara
     on_ground = position[1] >= max_center_y
