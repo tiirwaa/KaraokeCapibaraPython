@@ -111,6 +111,10 @@ LIGHT_BROWN = (160, 82, 45)
 GRAY = (128, 128, 128)
 YELLOW = (255, 255, 0)
 RED = (255, 0, 0)
+BLUE = (0, 0, 255)
+
+# Confetti particles
+confetti_particles = []
 
 # Física básica
 gravity = np.array([0.0, 0.5])
@@ -385,12 +389,29 @@ def draw_shadow(pos, scale, time_factor):
     shadow_y = get_ground_y(pos[0]) - scaled_shadow.get_height() // 2 + 60
     screen.blit(scaled_shadow, (shadow_x, shadow_y))
 
+def spawn_confetti(num=5):
+    party_colors = [RED, YELLOW, GREEN, BLUE, PINK, (255, 0, 255), (0, 255, 255)]
+    for _ in range(num):
+        x = random.randint(0, WIDTH)
+        y = -10
+        vx = random.uniform(-1, 1)
+        vy = random.uniform(1, 3)
+        color = random.choice(party_colors)
+        size = random.randint(3, 8)
+        confetti_particles.append({'x': x, 'y': y, 'vx': vx, 'vy': vy, 'color': color, 'size': size})
+
 # Bucle principal
 running = True
 time_elapsed = 0
+frame_count = 0
 while running:
     dt = clock.tick(60) / 1000.0
     time_elapsed += dt
+    frame_count += 1
+
+    # Spawn confetti periodically
+    if frame_count % 50 == 0:
+        spawn_confetti(3)
 
     current_event = events[current_event_index]
 
@@ -468,6 +489,14 @@ while running:
     velocity += gravity * dt
     position += velocity * dt
 
+    # Update confetti
+    for particle in confetti_particles[:]:
+        particle['vy'] += gravity[1] * dt
+        particle['x'] += particle['vx'] * dt
+        particle['y'] += particle['vy'] * dt
+        if particle['y'] > HEIGHT + 10:
+            confetti_particles.remove(particle)
+
     # Ajustar límites en función de la escala y el tamaño del cuerpo
     body_h = 220 * SCALE
     body_w = 140 * SCALE
@@ -503,6 +532,10 @@ while running:
     # Dibujar capibara
     on_ground = position[1] >= max_center_y
     draw_capibara(position, time_elapsed, on_ground)
+
+    # Draw confetti
+    for particle in confetti_particles:
+        pygame.draw.circle(screen, particle['color'], (int(particle['x']), int(particle['y'])), particle['size'])
 
     # Dibujar letras o instrumental
     if is_instrumental:
