@@ -368,9 +368,6 @@ while running:
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 running = False
-            elif event.key == pygame.K_SPACE:
-                play_audio()
-                print("Audio iniciado")
             elif event.key == pygame.K_s:
                 stop_audio()
 
