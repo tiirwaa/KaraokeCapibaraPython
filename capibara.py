@@ -115,11 +115,14 @@ RED = (255, 0, 0)
 # Física básica
 gravity = np.array([0.0, 0.5])
 velocity = np.array([0.0, 0.0])
-position = np.array([WIDTH // 2, HEIGHT // 2], dtype=float)
+position = np.array([WIDTH // 2, HEIGHT // 2 + 200], dtype=float)
 
 # Escala global (usa la misma en dibujo y física)
 # Reducida para que el capibara entre mejor en la ventana
 SCALE = 2
+
+def get_ground_y(x):
+    return HEIGHT - 150 + (x / WIDTH) * 50
 
 # Función para dibujar el capibara con todos los detalles (escalado x3 para tamaño mayor)
 def draw_capibara(pos, time_factor, on_ground):
@@ -127,7 +130,7 @@ def draw_capibara(pos, time_factor, on_ground):
     scale = SCALE
     bob = np.sin(time_factor * 2.0) * 4.0 * scale  # pequeño balanceo
 
-    rotation_angle = np.sin(time_factor * 1.0) * 0.5  # Aumentar el ángulo para más movimiento lateral
+    rotation_angle = np.sin(time_factor * 1.0) * 0.2  # Suavizar el ángulo para menos movimiento lateral
     surf_width = 700
     surf_height = 700
     capibara_surf = pygame.Surface((surf_width, surf_height), pygame.SRCALPHA)
@@ -261,13 +264,13 @@ def draw_capibara(pos, time_factor, on_ground):
     upper_leg = 36 * scale
     lower_leg = 38 * scale
     leg_thickness = int(14 * scale)
-    ground_y = HEIGHT - 60
 
-    def draw_leg(hip_x, hip_y, phase, on_ground, ground_y, time_factor):
+    def draw_leg(hip_x, hip_y, phase, on_ground, time_factor):
         if on_ground:
             # Target for walking: oscillate x, y at ground
             target_x = np.sin(time_factor * 2.5 + phase) * 30 * scale
-            target_y = ground_y - hip_y
+            target_world_x = hip_x + target_x
+            target_y = get_ground_y(target_world_x) - hip_y + 100  # Offset para que los pies toquen el suelo
             L1 = upper_leg
             L2 = lower_leg
             d = np.sqrt(target_x**2 + target_y**2)
@@ -300,8 +303,8 @@ def draw_capibara(pos, time_factor, on_ground):
         pygame.draw.line(capibara_surf, body_color, tuple(knee.astype(int)), tuple(foot.astype(int)), max(1, leg_thickness - 2))
 
         # articulaciones
-        pygame.draw.circle(capibara_surf, body_color, (int(hip_x), int(hip_y)), int(leg_thickness / 2))  # Revertir a original
-        pygame.draw.circle(capibara_surf, body_color, tuple(knee.astype(int)), int(leg_thickness / 2))  # Revertir a original
+        pygame.draw.circle(capibara_surf, body_color, (int(hip_x), int(hip_y)), int(leg_thickness / 2))
+        pygame.draw.circle(capibara_surf, body_color, tuple(knee.astype(int)), int(leg_thickness / 2))
 
         # pie como pequeña elipse
         foot_rect = pygame.Rect(0, 0, int(34 * scale), int(18 * scale))
@@ -312,8 +315,8 @@ def draw_capibara(pos, time_factor, on_ground):
     # dibujar pierna izquierda y derecha (mirrored)
     left_hip_x = int(x - hip_x_offset)
     right_hip_x = int(x + hip_x_offset)
-    draw_leg(left_hip_x, hip_y, phase=0.0, on_ground=on_ground, ground_y=ground_y, time_factor=time_factor)
-    draw_leg(right_hip_x, hip_y, phase=1.6, on_ground=on_ground, ground_y=ground_y, time_factor=time_factor)
+    draw_leg(left_hip_x, hip_y, phase=0.0, on_ground=on_ground, time_factor=time_factor)
+    draw_leg(right_hip_x, hip_y, phase=1.6, on_ground=on_ground, time_factor=time_factor)
 
     # Boceto final: ojos con brillo
     pygame.draw.circle(capibara_surf, WHITE, (int(head_x - eye_x_offset + 3 * scale), int(eye_y - 2 * scale)), int(1 * scale))  # Reducir radio
@@ -329,13 +332,14 @@ def draw_capibara(pos, time_factor, on_ground):
 def draw_grass(time_factor):
     grass_height = 20 * SCALE
     grass_color = GREEN
-    dirt_height = 40
-    # Dibujar tierra debajo
-    pygame.draw.rect(screen, DARK_BROWN, (0, HEIGHT - dirt_height, WIDTH, dirt_height))
-    # Dibujar césped encima
+    # Dibujar tierra debajo con inclinación para dar profundidad
+    dirt_points = [(0, HEIGHT - 150), (WIDTH, HEIGHT - 100), (WIDTH, HEIGHT), (0, HEIGHT)]
+    pygame.draw.polygon(screen, DARK_BROWN, dirt_points)
+    # Dibujar césped encima con base inclinada
     for x in range(0, WIDTH, int(10 * SCALE)):
+        base_y = HEIGHT - 150 + (x / WIDTH) * 50  # Inclinación de 150 a 100
         sway = np.sin(time_factor * 2.0 + x * 0.05) * 3 * SCALE
-        pygame.draw.line(screen, grass_color, (x, HEIGHT - dirt_height), (x + sway, HEIGHT - dirt_height - grass_height), int(2 * SCALE))
+        pygame.draw.line(screen, grass_color, (x, base_y), (x + sway, base_y - grass_height), int(2 * SCALE))
 
 # Bucle principal
 running = True
@@ -423,9 +427,9 @@ while running:
     # Ajustar límites en función de la escala y el tamaño del cuerpo
     body_h = 220 * SCALE
     body_w = 140 * SCALE
-    floor_height = 60
+    floor_height = 140
     # altura máxima del centro del cuerpo para que la base del cuerpo quede sobre el suelo
-    max_center_y = HEIGHT - floor_height - (body_h / 2) - 50  # Subir un poco más el capibara
+    max_center_y = HEIGHT - floor_height - (body_h / 2) + 30  # Bajar más el capibara
     if position[1] >= max_center_y:
         position[1] = max_center_y
         velocity[1] *= -0.8
