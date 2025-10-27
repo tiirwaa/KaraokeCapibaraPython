@@ -338,8 +338,11 @@ def draw_grass(time_factor):
     # Dibujar césped encima con base inclinada
     for x in range(0, WIDTH, int(10 * SCALE)):
         base_y = HEIGHT - 150 + (x / WIDTH) * 50  # Inclinación de 150 a 100
-        sway = np.sin(time_factor * 2.0 + x * 0.05) * 3 * SCALE
-        pygame.draw.line(screen, grass_color, (x, base_y), (x + sway, base_y - grass_height), int(2 * SCALE))
+        ground_height = HEIGHT - base_y
+        for dy in range(0, int(ground_height), int(10 * SCALE)):
+            y = base_y + dy
+            sway = np.sin(time_factor * 2.0 + x * 0.05 + dy * 0.1) * 3 * SCALE
+            pygame.draw.line(screen, grass_color, (x, y), (x + sway, y - grass_height), int(2 * SCALE))
 
 # Bucle principal
 running = True
