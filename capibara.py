@@ -228,7 +228,7 @@ def draw_capibara(pos, time_factor):
         pygame.draw.line(screen, body_color, tuple(elbow.astype(int)), tuple(hand.astype(int)), max(1, arm_thickness - 2))
 
         # articulaciones
-        pygame.draw.circle(screen, body_color, tuple(elbow.astype(int)), int(arm_thickness/1.1))
+        pygame.draw.circle(screen, body_color, tuple(elbow.astype(int)), int(arm_thickness/2))
         # mano (pequeña elipse)
         hand_rect = pygame.Rect(0, 0, int(paw_w), int(paw_h))
         hand_rect.center = (int(hand[0]), int(hand[1]))
@@ -273,8 +273,8 @@ def draw_capibara(pos, time_factor):
         pygame.draw.line(screen, body_color, tuple(knee.astype(int)), tuple(foot.astype(int)), max(1, leg_thickness - 2))
 
         # articulaciones
-        pygame.draw.circle(screen, body_color, (int(hip_x), int(hip_y)), int(leg_thickness/1.2))
-        pygame.draw.circle(screen, body_color, tuple(knee.astype(int)), int(leg_thickness/1.1))
+        pygame.draw.circle(screen, body_color, (int(hip_x), int(hip_y)), int(leg_thickness/2))
+        pygame.draw.circle(screen, body_color, tuple(knee.astype(int)), int(leg_thickness/2))
 
         # pie como pequeña elipse
         foot_rect = pygame.Rect(0, 0, int(34 * scale), int(18 * scale))
