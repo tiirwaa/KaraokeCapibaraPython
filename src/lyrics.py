@@ -1,8 +1,12 @@
 import random
 import pygame
+import os
 
 class LyricsManager:
-    def __init__(self, lyrics_file='res/txt/letra.txt', word_time=0.3):
+    def __init__(self, lyrics_file=None, word_time=0.3):
+        if lyrics_file is None:
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            lyrics_file = os.path.join(script_dir, '..', 'res', 'txt', 'letra.txt')
         self.word_time = word_time
         self.events = []
         self.current_event_index = 0

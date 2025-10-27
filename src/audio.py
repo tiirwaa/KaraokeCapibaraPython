@@ -1,4 +1,4 @@
-import winsound
+import pygame
 import os
 
 class AudioManager:
@@ -12,14 +12,16 @@ class AudioManager:
     def __init__(self):
         if not hasattr(self, 'initialized'):
             self.initialized = True
-            # Deshabilitar audio en SDL para que winsound funcione
-            os.environ['SDL_AUDIODRIVER'] = 'dummy'
-            os.environ['SDL_INIT_AUDIO'] = '0'
+            pygame.mixer.init()
 
-    def play_audio(self, filename='res/wav/capibara.wav'):
+    def play_audio(self, filename=None):
         print("Iniciando reproducción de audio")
-        winsound.PlaySound(filename, winsound.SND_FILENAME | winsound.SND_ASYNC | winsound.SND_LOOP)
+        if filename is None:
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            filename = os.path.join(script_dir, '..', 'res', 'wav', 'capibara.wav')
+        pygame.mixer.music.load(filename)
+        pygame.mixer.music.play(-1)  # loop
 
     def stop_audio(self):
         print("Deteniendo audio")
-        winsound.PlaySound(None, winsound.SND_PURGE)
+        pygame.mixer.music.stop()

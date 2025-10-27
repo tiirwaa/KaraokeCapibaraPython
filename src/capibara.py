@@ -6,6 +6,7 @@ import winsound
 import os
 import glob
 from svgpathtools import svg2paths
+import json
 
 # Deshabilitar audio en SDL para que winsound funcione
 os.environ['SDL_AUDIODRIVER'] = 'dummy'
@@ -30,6 +31,21 @@ print(f"Loaded {num_frames} frames")
 # Load SVG paths for capybara
 paths, attributes = svg2paths('../res/svg/salida_bezier.svg')
 
+# Try to load landmarks (optional) to improve alignment between frames and physics
+landmarks = {}
+landmarks_file = os.path.join('..','res','txt','landmarks.json')
+if os.path.exists(landmarks_file):
+    try:
+        with open(landmarks_file, 'r', encoding='utf-8') as lf:
+            lm = json.load(lf)
+            for item in lm.get('labels', []):
+                landmarks[item['label']] = tuple(item['svg'])
+        print(f'Loaded {len(landmarks)} landmarks')
+    except Exception as e:
+        print('Could not load landmarks:', e)
+else:
+    print('No landmarks file found at', landmarks_file)
+
 # Precompute points for each path for faster drawing
 path_points = []
 for path in paths:
@@ -46,9 +62,22 @@ if paths:
     max_y = max(p.bbox()[3] for p in paths)
     svg_center_x = (min_x + max_x) / 2
     svg_center_y = (min_y + max_y) / 2
+    # If coxofemoral landmarks exist, use their midpoint as an anchor for legs
+    if 'coxofemoral_izquierda' in landmarks and 'coxofemoral_derecha' in landmarks:
+        lx, ly = landmarks['coxofemoral_izquierda']
+        rx, ry = landmarks['coxofemoral_derecha']
+        cox_mid_x = (lx + rx) / 2.0
+        cox_mid_y = (ly + ry) / 2.0
+        anchor_svg_x = cox_mid_x
+        anchor_svg_y = cox_mid_y
+    else:
+        anchor_svg_x = svg_center_x
+        anchor_svg_y = svg_center_y
 else:
     svg_center_x = 0
     svg_center_y = 0
+    anchor_svg_x = 0
+    anchor_svg_y = 0
 
 # Animation steps matching Manim
 PI = np.pi
@@ -202,7 +231,7 @@ position = np.array([WIDTH // 2, HEIGHT // 2], dtype=float)  # Center position i
 
 # Escala global (usa la misma en dibujo y física)
 # Reducida para que el capibara entre mejor en la ventana
-SCALE = 2
+SCALE = 3
 
 def get_ground_y(x):
     return HEIGHT - 150 + (x / WIDTH) * 50
@@ -217,8 +246,18 @@ def draw_capibara(pos, time_factor, on_ground):
     new_width = int(frame.get_width() * scale_factor)
     new_height = int(frame.get_height() * scale_factor)
     scaled_frame = pygame.transform.scale(frame, (new_width, new_height))
-    # Center at pos, lower and slightly left
-    rect = scaled_frame.get_rect(center=(int(pos[0]) - 20, int(pos[1]) + 160))
+    # Align the frame so that the coxofemoral anchor (if provided) sits at `pos`.
+    # Compute vector from svg center to anchor in SVG coords, scale to frame pixels
+    vec_x = anchor_svg_x - svg_center_x
+    vec_y = anchor_svg_y - svg_center_y
+    # scaled vector in pixels on the reduced frame
+    scaled_vec_x = vec_x * scale_factor
+    scaled_vec_y = vec_y * scale_factor
+    # The rect center should be offset so that anchor point maps to pos
+    # We add the previous visual offset (+160 in y and -20 in x) to preserve look
+    rect_center_x = int(pos[0] - scaled_vec_x) - 20
+    rect_center_y = int(pos[1] + 160 - scaled_vec_y)
+    rect = scaled_frame.get_rect(center=(rect_center_x, rect_center_y))
     screen.blit(scaled_frame, rect)
 
 def draw_grass(time_factor):

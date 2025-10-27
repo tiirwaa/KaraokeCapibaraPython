@@ -1,43 +1,290 @@
 from manim import *
+import json
+import math
+import numpy as np
+from svgpathtools import svg2paths
 
 config.transparent = True
+config.quality = "low_quality"
+config.save_pngs = True
+config.write_to_movie = True
+config.frame_size = (1280, 900)
+
 
 class SVGAnimation(Scene):
     def construct(self):
         # Cargar el SVG completo usando SVGMobject
         svg = SVGMobject('res/svg/salida_bezier.svg')
-        
-        # Cambiar el color del trazo a blanco para que sea visible en el fondo negro
-        svg.set_stroke(WHITE, 2)
+
+        # Cambiar el color del trazo a negro para que sea visible en el fondo azul, y más grueso
+        svg.set_stroke(BLACK, 4)
         svg.set_fill(opacity=0)  # Sin relleno
-        
+
         # Escalar y centrar el SVG
-        svg.scale(3)  # Match the scale in capibara.py for consistent debugging
+        svg.scale(5)  # Match the scale in capibara.py for consistent debugging
         svg.move_to(ORIGIN)
-        
+
+        # Seleccionar pies/piernas usando landmarks guardados para evitar mapeos incorrectos
+        # Cargamos los landmarks (coordenadas en espacio SVG, generadas por utils/point_picker.py)
+        import json
+        from svgpathtools import svg2paths
+
+        landmarks_path = 'res/txt/landmarks.json'
+        try:
+            with open(landmarks_path, 'r', encoding='utf-8') as lf:
+                lm = json.load(lf)
+                labels = {p['label']: tuple(p['svg']) for p in lm.get('labels', [])}
+        except Exception as e:
+            print(f'Warning: no se pudo cargar {landmarks_path}: {e}. Usando mapeo por defecto.')
+            labels = {}
+
+        # Usar svgpathtools para calcular centros por path (asumimos mismo orden de submobjects)
+        paths, _ = svg2paths('res/svg/salida_bezier.svg')
+        def path_center(path, n=200):
+            pts = [path.point(t) for t in np.linspace(0, 1, n)]
+            xs = [p.real for p in pts]
+            ys = [p.imag for p in pts]
+            return (sum(xs)/len(xs), sum(ys)/len(ys))
+
+        path_centers = [path_center(p) for p in paths]
+
+        def nearest_path_indices(pt, k=2):
+            # retorna índices de los k paths más cercanos al punto pt (x,y)
+            dists = [math.hypot(pc[0]-pt[0], pc[1]-pt[1]) for pc in path_centers]
+            idxs = sorted(range(len(dists)), key=lambda i: dists[i])
+            return idxs[:k]
+
+        # Mapear pies (puede haber varios subpaths que forman el pie; tomamos los 2 más cercanos)
+        left_foot_idxs = []
+        right_foot_idxs = []
+        if 'pie_izquierdo' in labels:
+            left_foot_idxs = nearest_path_indices(labels['pie_izquierdo'], k=2)
+        if 'pie_derecho' in labels:
+            right_foot_idxs = nearest_path_indices(labels['pie_derecho'], k=2)
+
+        # Mapear coxofemorales (usaremos el más cercano como la "pierna")
+        left_leg_idx = None
+        right_leg_idx = None
+        if 'coxofemoral_izquierda' in labels:
+            left_leg_idx = nearest_path_indices(labels['coxofemoral_izquierda'], k=1)[0]
+        if 'coxofemoral_derecha' in labels:
+            right_leg_idx = nearest_path_indices(labels['coxofemoral_derecha'], k=1)[0]
+
+        # Evitar asignar la misma path a múltiples partes: deduplicar índices
+        used_idxs = set()
+        def take_unique(idxs):
+            out = []
+            for i in idxs:
+                if i not in used_idxs:
+                    out.append(i)
+                    used_idxs.add(i)
+            return out
+
+        # Convertir índices de paths a submobjects del SVGMobject (mismo orden)
+        def submobj(i):
+            try:
+                return svg.submobjects[i]
+            except Exception:
+                return None
+
+        # apply deduplication so one path isn't assigned twice
+        left_foot_idxs = take_unique(left_foot_idxs)
+        right_foot_idxs = take_unique(right_foot_idxs)
+        # ensure legs indices are reserved too
+        if left_leg_idx is not None and left_leg_idx not in used_idxs:
+            used_idxs.add(left_leg_idx)
+        if right_leg_idx is not None and right_leg_idx not in used_idxs:
+            used_idxs.add(right_leg_idx)
+
+        left_foot_subs = [submobj(i) for i in left_foot_idxs if submobj(i) is not None]
+        # deduplicate by object id to avoid adding same submobject twice
+        seen = set()
+        uniq_left = []
+        for s in left_foot_subs:
+            if id(s) not in seen:
+                uniq_left.append(s)
+                seen.add(id(s))
+        left_foot_subs = uniq_left
+
+        right_foot_subs = [submobj(i) for i in right_foot_idxs if submobj(i) is not None]
+        uniq_right = []
+        for s in right_foot_subs:
+            if id(s) not in seen:
+                uniq_right.append(s)
+                seen.add(id(s))
+        right_foot_subs = uniq_right
+        left_leg_sub = submobj(left_leg_idx) if left_leg_idx is not None else None
+        right_leg_sub = submobj(right_leg_idx) if right_leg_idx is not None else None
+
+        # Debug prints: mostrar mapeo encontrado
+        print('Landmark -> path indices:')
+        print(' left_foot_idxs=', left_foot_idxs)
+        print(' right_foot_idxs=', right_foot_idxs)
+        print(' left_leg_idx=', left_leg_idx, ' right_leg_idx=', right_leg_idx)
+        try:
+            print(' left_foot_centers=', [path_centers[i] for i in left_foot_idxs])
+            print(' right_foot_centers=', [path_centers[i] for i in right_foot_idxs])
+            if left_leg_idx is not None:
+                print(' left_leg_center=', path_centers[left_leg_idx])
+            if right_leg_idx is not None:
+                print(' right_leg_center=', path_centers[right_leg_idx])
+        except Exception:
+            pass
+
+        # Crear grupos leg -> include leg + its foot submobjects
+        # Ensure we don't add the same submobject twice into a group
+        def make_leg_group(leg_sub, foot_subs):
+            members = []
+            if leg_sub is not None:
+                members.append(leg_sub)
+            for fs in foot_subs:
+                if all(fs is not m for m in members):
+                    members.append(fs)
+            return VGroup(*members) if members else VGroup()
+
+        leg_group0 = make_leg_group(left_leg_sub, left_foot_subs)
+        leg_group1 = make_leg_group(right_leg_sub, right_foot_subs)
+
+        legs = VGroup(leg_group0, leg_group1)
+        # Flat feet group for legacy prints/usage
+        feet = VGroup(*([s for s in (left_foot_subs + right_foot_subs) if s is not None]))
+
+        # Mapear otros puntos nuevos
+        head_idx = None
+        neck_idx = None
+        tail_idx = None
+        left_ear_idx = None
+        right_ear_idx = None
+        left_eye_idx = None
+        right_eye_idx = None
+        nose_idx = None
+        mouth_idx = None
+        chest_idx = None
+        abdomen_idx = None
+        back_idx = None
+
+        if 'cabeza' in labels:
+            head_idx = nearest_path_indices(labels['cabeza'], k=1)[0]
+        if 'cuello' in labels:
+            neck_idx = nearest_path_indices(labels['cuello'], k=1)[0]
+        if 'cola' in labels:
+            tail_idx = nearest_path_indices(labels['cola'], k=1)[0]
+        if 'oreja_izquierda' in labels:
+            left_ear_idx = nearest_path_indices(labels['oreja_izquierda'], k=1)[0]
+        if 'oreja_derecha' in labels:
+            right_ear_idx = nearest_path_indices(labels['oreja_derecha'], k=1)[0]
+        if 'ojo_izquierdo' in labels:
+            left_eye_idx = nearest_path_indices(labels['ojo_izquierdo'], k=1)[0]
+        if 'ojo_derecho' in labels:
+            right_eye_idx = nearest_path_indices(labels['ojo_derecho'], k=1)[0]
+        if 'nariz' in labels:
+            nose_idx = nearest_path_indices(labels['nariz'], k=1)[0]
+        if 'boca' in labels:
+            mouth_idx = nearest_path_indices(labels['boca'], k=1)[0]
+        if 'pecho' in labels:
+            chest_idx = nearest_path_indices(labels['pecho'], k=1)[0]
+        if 'abdomen' in labels:
+            abdomen_idx = nearest_path_indices(labels['abdomen'], k=1)[0]
+        if 'espalda' in labels:
+            back_idx = nearest_path_indices(labels['espalda'], k=1)[0]
+
+        # Reservar índices usados
+        for idx in [head_idx, neck_idx, tail_idx, left_ear_idx, right_ear_idx, left_eye_idx, right_eye_idx, nose_idx, mouth_idx, chest_idx, abdomen_idx, back_idx]:
+            if idx is not None and idx not in used_idxs:
+                used_idxs.add(idx)
+
+        # Crear submobjects
+        head_sub = submobj(head_idx) if head_idx is not None else None
+        neck_sub = submobj(neck_idx) if neck_idx is not None else None
+        tail_sub = submobj(tail_idx) if tail_idx is not None else None
+        left_ear_sub = submobj(left_ear_idx) if left_ear_idx is not None else None
+        right_ear_sub = submobj(right_ear_idx) if right_ear_idx is not None else None
+        left_eye_sub = submobj(left_eye_idx) if left_eye_idx is not None else None
+        right_eye_sub = submobj(right_eye_idx) if right_eye_idx is not None else None
+        nose_sub = submobj(nose_idx) if nose_idx is not None else None
+        mouth_sub = submobj(mouth_idx) if mouth_idx is not None else None
+        chest_sub = submobj(chest_idx) if chest_idx is not None else None
+        abdomen_sub = submobj(abdomen_idx) if abdomen_idx is not None else None
+        back_sub = submobj(back_idx) if back_idx is not None else None
+
+        # Crear grupos
+        head_group = VGroup(*[s for s in [head_sub, neck_sub, left_ear_sub, right_ear_sub, left_eye_sub, right_eye_sub, nose_sub, mouth_sub] if s is not None])
+        body_group = VGroup(*[s for s in [chest_sub, abdomen_sub, back_sub] if s is not None])
+        tail_group = VGroup(tail_sub) if tail_sub else VGroup()
+
+        # Usar landmarks para puntos de rotación (coxofemorales)
+        left_joint = labels.get('coxofemoral_izquierda', (0,0))
+        right_joint = labels.get('coxofemoral_derecha', (0,0))
+        # Escalar por 5 (como el SVG) y asumir origen en (0,0)
+        left_joint_point = np.array([left_joint[0] * 5, left_joint[1] * 5, 0])
+        right_joint_point = np.array([right_joint[0] * 5, right_joint[1] * 5, 0])
+
+        # Puntos de rotación para cabeza y cola
+        head_center = labels.get('cabeza', (0,0))
+        head_point = np.array([head_center[0] * 5, head_center[1] * 5, 0])
+        tail_center = labels.get('cola', (0,0))
+        tail_point = np.array([tail_center[0] * 5, tail_center[1] * 5, 0])
+
         # Mostrar el SVG estático inicialmente
         self.add(svg)
         self.wait(1)
-        
-        # Animación de baile: rotaciones y movimientos
+
+        # Animación de baile: rotaciones y movimientos; rotamos las piernas (padres) para que las patas las sigan
         # Girar a la izquierda
-        self.play(Rotate(svg, angle=PI/6, run_time=0.5))
+        self.play(leg_group0.animate.rotate(PI/8, about_point=left_joint_point), leg_group1.animate.rotate(PI/8, about_point=right_joint_point), run_time=0.5)
+        print(f"After left turn: Feet center: {feet.get_center()}, Legs center: {legs.get_center()}")
+        # Wiggle (rotaciones aplicadas a las piernas -> las patas siguen automáticamente)
+        self.play(leg_group0.animate.rotate(-PI/4, about_point=left_joint_point), leg_group1.animate.rotate(-PI/4, about_point=right_joint_point), run_time=0.2)
+        self.play(leg_group0.animate.rotate(PI/4, about_point=left_joint_point), leg_group1.animate.rotate(PI/4, about_point=right_joint_point), run_time=0.2)
+
         # Girar a la derecha
-        self.play(Rotate(svg, angle=-PI/3, run_time=0.5))
+        self.play(leg_group0.animate.rotate(-PI/8, about_point=left_joint_point), leg_group1.animate.rotate(-PI/8, about_point=right_joint_point), run_time=0.5)
+        print(f"After right turn: Feet center: {feet.get_center()}, Legs center: {legs.get_center()}")
+        # Wiggle
+        self.play(leg_group0.animate.rotate(PI/4, about_point=left_joint_point), leg_group1.animate.rotate(PI/4, about_point=right_joint_point), run_time=0.2)
+        self.play(leg_group0.animate.rotate(-PI/4, about_point=left_joint_point), leg_group1.animate.rotate(-PI/4, about_point=right_joint_point), run_time=0.2)
+
         # Volver al centro
-        self.play(Rotate(svg, angle=PI/6, run_time=0.5))
-        
-        # Mover arriba y abajo (rebote)
-        self.play(svg.animate.shift(UP * 0.5), run_time=0.3)
-        self.play(svg.animate.shift(DOWN * 1.0), run_time=0.3)
-        self.play(svg.animate.shift(UP * 0.5), run_time=0.3)
-        
-        # Más giros para simular baile
-        self.play(Rotate(svg, angle=PI/4, run_time=0.4))
-        self.play(Rotate(svg, angle=-PI/2, run_time=0.4))
-        self.play(Rotate(svg, angle=PI/4, run_time=0.4))
-        
+        self.play(leg_group0.animate.rotate(PI/8, about_point=left_joint_point), leg_group1.animate.rotate(PI/8, about_point=right_joint_point), run_time=0.5)
+        print(f"After center: Feet center: {feet.get_center()}, Legs center: {legs.get_center()}")
+
+        # Bounce: aplicamos shifts a las piernas
+        self.play(leg_group0.animate.shift(DOWN * 0.2).rotate(PI/24, about_point=left_joint_point), leg_group1.animate.shift(DOWN * 0.2).rotate(PI/24, about_point=right_joint_point), run_time=0.3)
+        self.play(leg_group0.animate.shift(DOWN * 0.1).rotate(-PI/24, about_point=left_joint_point), leg_group1.animate.shift(DOWN * 0.1).rotate(-PI/24, about_point=right_joint_point), run_time=0.3)
+        self.play(leg_group0.animate.shift(UP * 0.1).rotate(PI/24, about_point=left_joint_point), leg_group1.animate.shift(UP * 0.1).rotate(PI/24, about_point=right_joint_point), run_time=0.3)
+        print(f"After bounce: Feet center: {feet.get_center()}, Legs center: {legs.get_center()}")
+
+        self.play(leg_group0.animate.rotate(PI/6, about_point=left_joint_point), leg_group1.animate.rotate(PI/6, about_point=right_joint_point), run_time=0.4)
+        # Wiggle
+        self.play(leg_group0.animate.rotate(-PI/3, about_point=left_joint_point), leg_group1.animate.rotate(-PI/3, about_point=right_joint_point), run_time=0.2)
+        self.play(leg_group0.animate.rotate(PI/3, about_point=left_joint_point), leg_group1.animate.rotate(PI/3, about_point=right_joint_point), run_time=0.2)
+
+        self.play(leg_group0.animate.rotate(-PI/6, about_point=left_joint_point), leg_group1.animate.rotate(-PI/6, about_point=right_joint_point), run_time=0.4)
+        # Wiggle
+        self.play(leg_group0.animate.rotate(PI/3, about_point=left_joint_point), leg_group1.animate.rotate(PI/3, about_point=right_joint_point), run_time=0.2)
+        self.play(leg_group0.animate.rotate(-PI/3, about_point=left_joint_point), leg_group1.animate.rotate(-PI/3, about_point=right_joint_point), run_time=0.2)
+
+        self.play(leg_group0.animate.rotate(PI/6, about_point=left_joint_point), leg_group1.animate.rotate(PI/6, about_point=right_joint_point), run_time=0.4)
+        print(f"After final turns: Feet center: {feet.get_center()}, Legs center: {legs.get_center()}")
+
+        # Animar cabeza y cola
+        if head_group:
+            self.play(head_group.animate.rotate(PI/12, about_point=head_point), run_time=0.3)
+            self.play(head_group.animate.rotate(-PI/12, about_point=head_point), run_time=0.3)
+        if tail_group:
+            self.play(tail_group.animate.shift(RIGHT * 0.1).rotate(PI/8), run_time=0.2)
+            self.play(tail_group.animate.shift(LEFT * 0.1).rotate(-PI/8), run_time=0.2)
+
         # Final: volver a posición original
-        self.play(svg.animate.move_to(ORIGIN).rotate(0), run_time=1)
-        
+        # Rotar legs a 0 (siempre alrededor de su centro) y mover svg al origen
+        self.play(svg.animate.move_to(ORIGIN), leg_group0.animate.rotate(0, about_point=left_joint_point), leg_group1.animate.rotate(0, about_point=right_joint_point), run_time=1)
+        if head_group:
+            self.play(head_group.animate.rotate(0, about_point=head_point), run_time=0.5)
+        if tail_group:
+            self.play(tail_group.animate.rotate(0), run_time=0.5)
+
         self.wait(1)
+
+if __name__ == '__main__':
+    scene = SVGAnimation()
+    scene.render()

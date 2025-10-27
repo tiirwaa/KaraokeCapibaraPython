@@ -1,4 +1,0 @@
-# This file is used internally by FFMPEG.
-file 'file:C:/Users/Andrey/Documentos/capibara/media/videos/animar_svg_manim/480p15/partial_movie_files/SVGAnimation/1185818338_3264800480_223132457.mp4'
-file 'file:C:/Users/Andrey/Documentos/capibara/media/videos/animar_svg_manim/480p15/partial_movie_files/SVGAnimation/624642324_2338525984_4012444552.mp4'
-file 'file:C:/Users/Andrey/Documentos/capibara/media/videos/animar_svg_manim/480p15/partial_movie_files/SVGAnimation/624642324_1839128356_1154374140.mp4'

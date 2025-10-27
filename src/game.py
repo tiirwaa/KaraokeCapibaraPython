@@ -2,13 +2,20 @@ import pygame
 import numpy as np
 import random
 import sys
-from src.audio import AudioManager
-from src.lyrics import LyricsManager
-from src.capibara_model import Capibara
-from src.physics import Physics
+import os
+import json
+
+# Add parent directory to sys.path for relative imports
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+
+from audio import AudioManager
+from lyrics import LyricsManager
+from capibara_model import Capibara
 
 class Game:
-    def __init__(self, width=900, height=700):
+    def __init__(self, width=1024, height=768):
+        os.environ['SDL_VIDEODRIVER'] = 'windib'
+        pygame.init()
         self.width = width
         self.height = height
         self.screen = pygame.display.set_mode((width, height))
@@ -17,8 +24,20 @@ class Game:
 
         self.audio_manager = AudioManager()
         self.lyrics_manager = LyricsManager()
-        self.capibara = Capibara()
-        self.physics = Physics(width, height)
+        self.capibara = Capibara(width, height, scale=6)
+        self.capibara_position = np.array([width // 2, height // 2], dtype=float)
+
+        # Load optional landmarks to pass into components or for debugging
+        self.landmarks = {}
+        lm_path = os.path.join('..', 'res', 'txt', 'landmarks.json')
+        try:
+            if os.path.exists(lm_path):
+                with open(lm_path, 'r', encoding='utf-8') as f:
+                    lm = json.load(f)
+                    for item in lm.get('labels', []):
+                        self.landmarks[item['label']] = tuple(item['svg'])
+        except Exception as e:
+            print('Could not load landmarks in Game:', e)
 
         self.confetti_particles = []
         self.time_elapsed = 0
@@ -41,6 +60,7 @@ class Game:
         }
 
         self.audio_manager.play_audio()
+        # print("Audio started")
 
     def spawn_confetti(self, num=5):
         party_colors = [self.colors['red'], self.colors['yellow'], self.colors['green'], self.colors['blue'], self.colors['pink'], (255, 0, 255), (0, 255, 255)]
@@ -55,29 +75,29 @@ class Game:
 
     def update_confetti(self, dt):
         for particle in self.confetti_particles[:]:
-            particle['vy'] += self.physics.gravity[1] * dt
+            particle['vy'] += 0.5 * dt
             particle['x'] += particle['vx'] * dt
             particle['y'] += particle['vy'] * dt
             if particle['y'] > self.height + 10:
                 self.confetti_particles.remove(particle)
 
     def draw_grass(self, time_factor):
-        grass_height = 20 * self.capibara.scale
+        grass_height = 20
         grass_color = self.colors['green']
         dirt_points = [(0, self.height - 150), (self.width, self.height - 100), (self.width, self.height), (0, self.height)]
         pygame.draw.polygon(self.screen, self.colors['dark_brown'], dirt_points)
-        for x in range(0, self.width, int(10 * self.capibara.scale)):
+        for x in range(0, self.width, 10):
             base_y = self.height - 150 + (x / self.width) * 50
             ground_height = self.height - base_y
-            for dy in range(0, int(ground_height), int(10 * self.capibara.scale)):
+            for dy in range(0, int(ground_height), 10):
                 y = base_y + dy
-                sway = np.sin(time_factor * 2.0 + x * 0.05 + dy * 0.1) * 3 * self.capibara.scale
-                pygame.draw.line(self.screen, grass_color, (x, y), (x + sway, y - grass_height), int(2 * self.capibara.scale))
+                sway = np.sin(time_factor * 2.0 + x * 0.05 + dy * 0.1) * 3
+                pygame.draw.line(self.screen, grass_color, (x, y), (x + sway, y - grass_height), 2)
 
     def draw_shadow(self, pos, time_factor):
         shadow_color = (0, 0, 0, 100)
-        shadow_width = 140 * self.capibara.scale
-        shadow_height = 40 * self.capibara.scale
+        shadow_width = 140 * 1.0
+        shadow_height = 40 * 1.0
         shadow_surf = pygame.Surface((shadow_width, shadow_height), pygame.SRCALPHA)
         pygame.draw.ellipse(shadow_surf, shadow_color, (0, 0, shadow_width, shadow_height))
 
@@ -112,14 +132,22 @@ class Game:
                     if event.key == pygame.K_ESCAPE:
                         running = False
 
-            self.physics.update(dt)
             self.update_confetti(dt)
 
             self.screen.fill(self.colors['sky'])
 
             self.draw_grass(self.time_elapsed)
-            self.draw_shadow(self.physics.position, self.time_elapsed)
-            self.capibara.draw(self.screen, self.physics.position, self.time_elapsed, self.physics.is_on_ground())
+            
+            # Calculate dancing position using mathematical functions
+            dance_offset_x = np.sin(self.time_elapsed * 2.0) * 30  # Sway left and right
+            dance_offset_y = np.cos(self.time_elapsed * 4.0) * 15  # Bob up and down
+            dance_pos = self.capibara_position + np.array([dance_offset_x, dance_offset_y])
+            
+            # Calculate dancing rotation
+            dance_angle = np.sin(self.time_elapsed * 3.0) * 5  # Slight rotation
+            
+            self.draw_shadow(dance_pos, self.time_elapsed)
+            self.capibara.draw(self.screen, dance_pos, self.time_elapsed, True, dance_angle)
 
             for particle in self.confetti_particles:
                 pygame.draw.circle(self.screen, particle['color'], (int(particle['x']), int(particle['y'])), particle['size'])
@@ -131,3 +159,7 @@ class Game:
         self.audio_manager.stop_audio()
         pygame.quit()
         sys.exit()
+
+if __name__ == '__main__':
+    game = Game()
+    game.run()
