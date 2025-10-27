@@ -311,6 +311,17 @@ def draw_capibara(pos, time_factor):
     scaled_surf = pygame.transform.scale(rotated_surf, (scaled_width, rotated_surf.get_height()))
     screen.blit(scaled_surf, (pos[0] - scaled_surf.get_width()//2, pos[1] - rotated_surf.get_height()//2))
 
+def draw_grass(time_factor):
+    grass_height = 20 * SCALE
+    grass_color = GREEN
+    dirt_height = 40
+    # Dibujar tierra debajo
+    pygame.draw.rect(screen, DARK_BROWN, (0, HEIGHT - dirt_height, WIDTH, dirt_height))
+    # Dibujar césped encima
+    for x in range(0, WIDTH, int(10 * SCALE)):
+        sway = np.sin(time_factor * 2.0 + x * 0.05) * 3 * SCALE
+        pygame.draw.line(screen, grass_color, (x, HEIGHT - dirt_height), (x + sway, HEIGHT - dirt_height - grass_height), int(2 * SCALE))
+
 # Bucle principal
 running = True
 time_elapsed = 0
@@ -418,10 +429,10 @@ while running:
                 current_word_index = len(current_word_data) - 1  # Mantener la última palabra resaltada
 
     # Limpiar pantalla
-    screen.fill(GREEN)
+    screen.fill((135, 206, 235))  # Azul cielo
 
-    # Dibujar suelo (ajustado)
-    pygame.draw.rect(screen, BROWN, (0, HEIGHT - floor_height, WIDTH, floor_height))
+    # Dibujar suelo (ajustado) - ahora con césped animado
+    draw_grass(time_elapsed)
 
     # Dibujar capibara
     draw_capibara(position, time_elapsed)
