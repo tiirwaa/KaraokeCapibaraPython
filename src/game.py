@@ -121,7 +121,7 @@ class Game:
             if self.frame_count % 50 == 0:
                 self.spawn_confetti(3)
 
-            if self.lyrics_manager.update(self.time_elapsed):
+            if self.lyrics_manager.update(pygame.mixer.music.get_pos() / 1000.0):
                 running = False
                 continue
 

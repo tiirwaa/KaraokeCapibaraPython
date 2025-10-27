@@ -23,6 +23,10 @@ class Capibara:
                         pass
         self.num_frames = len(self.frames)
 
+        # Lista de índices de frames que se ven bien (basado en los nombres proporcionados)
+        self.good_frame_indices = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 37, 43, 75]
+        self.num_good_frames = len(self.good_frame_indices)
+
         # Load SVG paths to compute centers and optional landmarks
         svg_path = os.path.join(os.path.dirname(__file__), '..', 'res', 'svg', 'salida_bezier.svg')
         svg_path = os.path.normpath(svg_path)
@@ -75,9 +79,10 @@ class Capibara:
         if not self.frames:
             return
         t = time_factor
-        # simple frame selector: cycle over frames using time
-        idx = int((t * 10) % self.num_frames) if self.num_frames > 0 else 0
-        frame = self.frames[idx]
+        # Seleccionar solo frames que se ven bien, ciclando a través de ellos
+        good_idx = int((t * 10) % self.num_good_frames) if self.num_good_frames > 0 else 0
+        frame_idx = self.good_frame_indices[good_idx] if good_idx < len(self.good_frame_indices) else 0
+        frame = self.frames[frame_idx] if frame_idx < len(self.frames) else self.frames[0]
 
         # Scale down to match previous behaviour (Manim scale=3, Pygame effective scale ~1.5)
         scale_factor = 1.0 / 3
