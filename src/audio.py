@@ -16,7 +16,7 @@ class AudioManager:
             os.environ['SDL_AUDIODRIVER'] = 'dummy'
             os.environ['SDL_INIT_AUDIO'] = '0'
 
-    def play_audio(self, filename='capibara.wav'):
+    def play_audio(self, filename='res/wav/capibara.wav'):
         print("Iniciando reproducción de audio")
         winsound.PlaySound(filename, winsound.SND_FILENAME | winsound.SND_ASYNC | winsound.SND_LOOP)
 

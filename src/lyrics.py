@@ -2,7 +2,7 @@ import random
 import pygame
 
 class LyricsManager:
-    def __init__(self, lyrics_file='letra.txt', word_time=0.3):
+    def __init__(self, lyrics_file='res/txt/letra.txt', word_time=0.3):
         self.word_time = word_time
         self.events = []
         self.current_event_index = 0

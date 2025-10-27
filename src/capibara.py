@@ -21,7 +21,7 @@ clock = pygame.time.Clock()
 
 def play_audio():
     print("Iniciando reproducción de audio")
-    winsound.PlaySound('capibara.wav', winsound.SND_FILENAME | winsound.SND_ASYNC | winsound.SND_LOOP)
+    winsound.PlaySound('res/wav/capibara.wav', winsound.SND_FILENAME | winsound.SND_ASYNC | winsound.SND_LOOP)
 
 def stop_audio():
     print("Deteniendo audio")
@@ -33,7 +33,7 @@ print("Audio iniciado automáticamente")
 
 # Cargar letras de la canción
 lyrics = []
-with open('letra.txt', 'r', encoding='utf-8') as f:
+with open('res/txt/letra.txt', 'r', encoding='utf-8') as f:
     for line in f:
         line = line.strip()
         if line:

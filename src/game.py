@@ -2,10 +2,10 @@ import pygame
 import numpy as np
 import random
 import sys
-from audio import AudioManager
-from lyrics import LyricsManager
-from capibara_model import Capibara
-from physics import Physics
+from src.audio import AudioManager
+from src.lyrics import LyricsManager
+from src.capibara_model import Capibara
+from src.physics import Physics
 
 class Game:
     def __init__(self, width=900, height=700):
