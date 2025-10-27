@@ -128,7 +128,7 @@ def draw_capibara(pos, time_factor):
     bob = np.sin(time_factor * 2.0) * 4.0 * scale  # pequeño balanceo
 
     # Paleta simplificada (usar colores ya definidos arriba)
-    body_color = LIGHT_BROWN
+    body_color = (139, 69, 19)  # más rojizo para parecer más natural
     outline_color = DARK_BROWN
     belly_color = (241, 196, 144)
     nose_color = (200, 150, 140)
@@ -140,9 +140,9 @@ def draw_capibara(pos, time_factor):
     shadow_rect = pygame.Rect(int(x - 110 * scale / 2 + 6 * scale), int(y + 28 * scale), int(110 * scale), int(44 * scale))
     pygame.draw.ellipse(screen, GRAY, shadow_rect)
 
-    # Cuerpo (forma ovalada vertical, como en la referencia)
-    body_w = 140 * scale
-    body_h = 220 * scale
+    # Cuerpo (forma más barrilada, más ancha para parecer más natural)
+    body_w = 180 * scale
+    body_h = 200 * scale
     body_rect = pygame.Rect(int(x - body_w/2), int(y - body_h/2 + bob), int(body_w), int(body_h))
     # Dibujar contorno grueso (primero el contorno más grande)
     outline_rect = body_rect.inflate(12 * scale, 12 * scale)
@@ -153,9 +153,9 @@ def draw_capibara(pos, time_factor):
     belly_rect = body_rect.inflate(-40 * scale, -80 * scale)
     pygame.draw.ellipse(screen, belly_color, belly_rect)
 
-    # Cabeza (pequeña y redondeada, superpuesta)
-    head_w = 90 * scale
-    head_h = 80 * scale
+    # Cabeza (más pequeña y redondeada, superpuesta)
+    head_w = 70 * scale
+    head_h = 60 * scale
     head_x = x
     head_y = y - body_h/2 + 40 * scale + bob
     head_rect = pygame.Rect(int(head_x - head_w/2), int(head_y - head_h/2), int(head_w), int(head_h))
@@ -200,8 +200,8 @@ def draw_capibara(pos, time_factor):
     # Aumentar separación horizontal entre manos
     front_x_offset = 60 * scale
     # Brazos articulados (hombro -> codo -> mano)
-    upper_len = 34 * scale
-    lower_len = 30 * scale
+    upper_len = 28 * scale
+    lower_len = 26 * scale
     arm_thickness = int(12 * scale)
 
     # función auxiliar para dibujar un brazo dado el hombro y un desfase de fase
@@ -246,8 +246,8 @@ def draw_capibara(pos, time_factor):
     # Piernas traseras articuladas (cadera -> rodilla -> pie)
     hip_x_offset = 34 * scale
     hip_y = int(y + 78 * scale + bob)  # cadera un poco más arriba que la base
-    upper_leg = 44 * scale
-    lower_leg = 46 * scale
+    upper_leg = 36 * scale
+    lower_leg = 38 * scale
     leg_thickness = int(14 * scale)
 
     def draw_leg(hip_x, hip_y, phase):
