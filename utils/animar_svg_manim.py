@@ -1,5 +1,7 @@
 from manim import *
 
+config.transparent = True
+
 class SVGAnimation(Scene):
     def construct(self):
         # Cargar el SVG completo usando SVGMobject
