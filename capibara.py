@@ -127,7 +127,7 @@ def draw_capibara(pos, time_factor):
     scale = SCALE
     bob = np.sin(time_factor * 2.0) * 4.0 * scale  # pequeño balanceo
 
-    rotation_angle = np.sin(time_factor * 1.0) * 0.3
+    rotation_angle = np.sin(time_factor * 1.0) * 0.5  # Aumentar el ángulo para más movimiento lateral
     surf_width = 500
     surf_height = 500
     capibara_surf = pygame.Surface((surf_width, surf_height), pygame.SRCALPHA)
@@ -147,17 +147,26 @@ def draw_capibara(pos, time_factor):
     shadow_rect = pygame.Rect(int(x - 110 * scale / 2 + 6 * scale), int(y + 28 * scale), int(110 * scale), int(44 * scale))
     pygame.draw.ellipse(capibara_surf, GRAY, shadow_rect)
 
-    # Cuerpo (forma más barrilada, más ancha para parecer más natural)
-    body_w = 180 * scale
-    body_h = 200 * scale
-    body_rect = pygame.Rect(int(x - body_w/2), int(y - body_h/2 + bob), int(body_w), int(body_h))
-    # Dibujar contorno grueso (primero el contorno más grande)
-    outline_rect = body_rect.inflate(12 * scale, 12 * scale)
-    pygame.draw.ellipse(capibara_surf, outline_color, outline_rect)
-    pygame.draw.ellipse(capibara_surf, body_color, body_rect)
+    # Cuerpo dividido en secciones: torso superior e inferior para más detalle
+    body_w = 100 * scale  # Reducir ancho para elipses menos anchas
+    body_h = 250 * scale  # Aumentar altura para mejor relación de aspecto (más alargado)
+    # Torso superior (pecho)
+    upper_body_h = 120 * scale  # Reducir para mejor proporción
+    upper_body_rect = pygame.Rect(int(x - body_w/2), int(y - body_h/2 + bob + 30 * scale), int(body_w), int(upper_body_h))  # Bajar más
+    upper_outline_rect = upper_body_rect.inflate(12 * scale, 12 * scale)
+    pygame.draw.ellipse(capibara_surf, outline_color, upper_outline_rect)
+    pygame.draw.ellipse(capibara_surf, body_color, upper_body_rect)
 
-    # Barriga más clara
-    belly_rect = body_rect.inflate(-40 * scale, -80 * scale)
+    # Torso inferior (abdomen/caderas, ligeramente más ancho)
+    lower_body_h = 130 * scale  # Aumentar para cubrir más
+    lower_body_w = body_w + 10 * scale  # menos ancho para mejor proporción
+    lower_body_rect = pygame.Rect(int(x - lower_body_w/2), int(y - body_h/2 + bob + upper_body_h - 50 * scale), int(lower_body_w), int(lower_body_h))  # Subir más
+    lower_outline_rect = lower_body_rect.inflate(12 * scale, 12 * scale)
+    pygame.draw.ellipse(capibara_surf, outline_color, lower_outline_rect)
+    pygame.draw.ellipse(capibara_surf, body_color, lower_body_rect)
+
+    # Barriga más clara en la parte inferior
+    belly_rect = lower_body_rect.inflate(-40 * scale, -50 * scale)
     pygame.draw.ellipse(capibara_surf, belly_color, belly_rect)
 
     # Cabeza (más pequeña y redondeada, superpuesta)
@@ -181,8 +190,8 @@ def draw_capibara(pos, time_factor):
     # Ojos pequeños y simpáticos
     eye_y = head_y - 5 * scale
     eye_x_offset = 18 * scale
-    pygame.draw.circle(capibara_surf, BLACK, (int(head_x - eye_x_offset), int(eye_y)), int(6 * scale))
-    pygame.draw.circle(capibara_surf, BLACK, (int(head_x + eye_x_offset), int(eye_y)), int(6 * scale))
+    pygame.draw.circle(capibara_surf, BLACK, (int(head_x - eye_x_offset), int(eye_y)), int(4 * scale))  # Reducir radio
+    pygame.draw.circle(capibara_surf, BLACK, (int(head_x + eye_x_offset), int(eye_y)), int(4 * scale))  # Reducir radio
 
     # Nariz y hocico sencillo
     nose_w, nose_h = 26 * scale, 18 * scale
@@ -197,7 +206,7 @@ def draw_capibara(pos, time_factor):
 
     # Bigotes (pocos puntitos alrededor del hocico)
     for dx in (-20 * scale, -10 * scale, 10 * scale, 20 * scale):
-        pygame.draw.circle(capibara_surf, outline_color, (int(head_x + dx), int(head_y + 6 * scale)), int(2 * scale))
+        pygame.draw.circle(capibara_surf, outline_color, (int(head_x + dx), int(head_y + 6 * scale)), int(1 * scale))  # Reducir radio
 
     # Patas delanteras (reposicionadas y con pequeña inclinación hacia dentro)
     paw_w, paw_h = 36 * scale, 24 * scale
@@ -205,7 +214,7 @@ def draw_capibara(pos, time_factor):
     # Bajar las manos un poco más (ajuste solicitado)
     front_y = head_y + 26 * scale
     # Aumentar separación horizontal entre manos
-    front_x_offset = 60 * scale
+    front_x_offset = 45 * scale  # Acercar más al cuerpo
     # Brazos articulados (hombro -> codo -> mano)
     upper_len = 28 * scale
     lower_len = 26 * scale
@@ -235,7 +244,7 @@ def draw_capibara(pos, time_factor):
         pygame.draw.line(capibara_surf, body_color, tuple(elbow.astype(int)), tuple(hand.astype(int)), max(1, arm_thickness - 2))
 
         # articulaciones
-        pygame.draw.circle(capibara_surf, body_color, tuple(elbow.astype(int)), int(arm_thickness/2))
+        pygame.draw.circle(capibara_surf, body_color, tuple(elbow.astype(int)), int(arm_thickness / 2))  # Revertir a original
         # mano (pequeña elipse)
         hand_rect = pygame.Rect(0, 0, int(paw_w), int(paw_h))
         hand_rect.center = (int(hand[0]), int(hand[1]))
@@ -243,7 +252,7 @@ def draw_capibara(pos, time_factor):
         pygame.draw.ellipse(capibara_surf, body_color, hand_rect)
 
     # hombros (ligeramente altos, cerca del pecho)
-    shoulder_y = int(head_y + 10 * scale)
+    shoulder_y = int(head_y + 20 * scale)  # Bajar un poco más
     left_shoulder_x = int(x - front_x_offset + 6 * scale)
     right_shoulder_x = int(x + front_x_offset - 6 * scale)
 
@@ -280,8 +289,8 @@ def draw_capibara(pos, time_factor):
         pygame.draw.line(capibara_surf, body_color, tuple(knee.astype(int)), tuple(foot.astype(int)), max(1, leg_thickness - 2))
 
         # articulaciones
-        pygame.draw.circle(capibara_surf, body_color, (int(hip_x), int(hip_y)), int(leg_thickness/2))
-        pygame.draw.circle(capibara_surf, body_color, tuple(knee.astype(int)), int(leg_thickness/2))
+        pygame.draw.circle(capibara_surf, body_color, (int(hip_x), int(hip_y)), int(leg_thickness / 2))  # Revertir a original
+        pygame.draw.circle(capibara_surf, body_color, tuple(knee.astype(int)), int(leg_thickness / 2))  # Revertir a original
 
         # pie como pequeña elipse
         foot_rect = pygame.Rect(0, 0, int(34 * scale), int(18 * scale))
@@ -296,11 +305,15 @@ def draw_capibara(pos, time_factor):
     draw_leg(right_hip_x, hip_y, phase=1.6)
 
     # Boceto final: ojos con brillo
-    pygame.draw.circle(capibara_surf, WHITE, (int(head_x - eye_x_offset + 3 * scale), int(eye_y - 2 * scale)), int(2 * scale))
-    pygame.draw.circle(capibara_surf, WHITE, (int(head_x + eye_x_offset + 3 * scale), int(eye_y - 2 * scale)), int(2 * scale))
+    pygame.draw.circle(capibara_surf, WHITE, (int(head_x - eye_x_offset + 3 * scale), int(eye_y - 2 * scale)), int(1 * scale))  # Reducir radio
+    pygame.draw.circle(capibara_surf, WHITE, (int(head_x + eye_x_offset + 3 * scale), int(eye_y - 2 * scale)), int(1 * scale))  # Reducir radio
 
     rotated_surf = pygame.transform.rotate(capibara_surf, np.degrees(rotation_angle))
-    screen.blit(rotated_surf, (pos[0] - rotated_surf.get_width()//2, pos[1] - rotated_surf.get_height()//2))
+    # Simular perspectiva 3D: reducir el ancho cuando gira para dar ilusión de profundidad
+    scale_x = 1 - abs(rotation_angle) * 0.4
+    scaled_width = int(rotated_surf.get_width() * scale_x)
+    scaled_surf = pygame.transform.scale(rotated_surf, (scaled_width, rotated_surf.get_height()))
+    screen.blit(scaled_surf, (pos[0] - scaled_surf.get_width()//2, pos[1] - rotated_surf.get_height()//2))
 
 # Bucle principal
 running = True
