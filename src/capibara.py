@@ -66,6 +66,38 @@ steps = [
 ]
 cycle_time = sum(dur for dur, _, _ in steps)
 
+def get_current_rotation(time_factor):
+    t = time_factor % cycle_time
+    current_rot = 0
+    elapsed = 0
+    for dur, action, value in steps:
+        if elapsed + dur > t:
+            if action == 'rotate':
+                fraction = (t - elapsed) / dur
+                current_rot += value * fraction
+            break
+        else:
+            if action == 'rotate':
+                current_rot += value
+            elapsed += dur
+    return current_rot
+
+def get_current_position_offset(time_factor):
+    t = time_factor % cycle_time
+    current_offset = np.array([0.0, 0.0])
+    elapsed = 0
+    for dur, action, value in steps:
+        if elapsed + dur > t:
+            if action == 'shift':
+                fraction = (t - elapsed) / dur
+                current_offset += np.array(value) * fraction
+            break
+        else:
+            if action == 'shift':
+                current_offset += np.array(value)
+            elapsed += dur
+    return current_offset
+
 def play_audio():
     print("Iniciando reproducción de audio")
     winsound.PlaySound('../res/wav/capibara.wav', winsound.SND_FILENAME | winsound.SND_ASYNC | winsound.SND_LOOP)
@@ -205,16 +237,21 @@ def draw_grass(time_factor):
             pygame.draw.line(screen, grass_color, (x, y), (x + sway, y - grass_height), int(2 * SCALE))
 
 def draw_shadow(pos, scale, time_factor):
+    # Compute shadow scaling based on height (smaller when jumping higher)
+    y_offset = pos[1] - position[1]
+    shadow_scale_extra = max(0.3, 1 - y_offset / 300)
+    
     shadow_color = (0, 0, 0, 100)  # semi-transparent black
-    shadow_width = 140 * scale
-    shadow_height = 40 * scale
+    shadow_width = 140 * scale * shadow_scale_extra
+    shadow_height = 40 * scale * shadow_scale_extra
     shadow_surf = pygame.Surface((shadow_width, shadow_height), pygame.SRCALPHA)
     pygame.draw.ellipse(shadow_surf, shadow_color, (0, 0, shadow_width, shadow_height))
 
-    # Apply same deformation as capibara for realism
-    rotation_angle = np.sin(time_factor * 1.0) * 0.2
+    # Apply deformation for realism, keeping shadow flat on ground
+    current_rot = get_current_rotation(time_factor)
+    rotation_angle = 0  # Keep shadow flat
+    scale_x = 1 - abs(current_rot) * 0.4  # Deform width based on capybara rotation
     rotated_shadow = pygame.transform.rotate(shadow_surf, np.degrees(rotation_angle))
-    scale_x = 1 - abs(rotation_angle) * 0.4
     scaled_width = int(rotated_shadow.get_width() * scale_x)
     scaled_shadow = pygame.transform.scale(rotated_shadow, (scaled_width, rotated_shadow.get_height()))
 
@@ -354,12 +391,16 @@ while running:
     # Dibujar suelo (ajustado) - ahora con césped animado
     draw_grass(time_elapsed)
 
+    # Compute current position offset for animation
+    position_offset = get_current_position_offset(time_elapsed) * 100  # Scale for pixel movement
+    draw_pos = position + position_offset
+
     # Dibujar sombra
-    draw_shadow(position, SCALE, time_elapsed)
+    draw_shadow(draw_pos, SCALE, time_elapsed)
 
     # Dibujar capibara
     on_ground = True  # Static, no physics
-    draw_capibara(position, time_elapsed, on_ground)
+    draw_capibara(draw_pos, time_elapsed, on_ground)
 
     # Draw confetti
     for particle in confetti_particles:
