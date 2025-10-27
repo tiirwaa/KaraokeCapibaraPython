@@ -127,6 +127,13 @@ def draw_capibara(pos, time_factor):
     scale = SCALE
     bob = np.sin(time_factor * 2.0) * 4.0 * scale  # pequeño balanceo
 
+    rotation_angle = np.sin(time_factor * 1.0) * 0.3
+    surf_width = 500
+    surf_height = 500
+    capibara_surf = pygame.Surface((surf_width, surf_height), pygame.SRCALPHA)
+    center_x = surf_width // 2
+    center_y = surf_height // 2
+
     # Paleta simplificada (usar colores ya definidos arriba)
     body_color = (139, 69, 19)  # más rojizo para parecer más natural
     outline_color = DARK_BROWN
@@ -134,11 +141,11 @@ def draw_capibara(pos, time_factor):
     nose_color = (200, 150, 140)
 
     # Coordenadas base
-    x, y = float(pos[0]), float(pos[1])
+    x, y = center_x, center_y
 
     # Sombra simple
     shadow_rect = pygame.Rect(int(x - 110 * scale / 2 + 6 * scale), int(y + 28 * scale), int(110 * scale), int(44 * scale))
-    pygame.draw.ellipse(screen, GRAY, shadow_rect)
+    pygame.draw.ellipse(capibara_surf, GRAY, shadow_rect)
 
     # Cuerpo (forma más barrilada, más ancha para parecer más natural)
     body_w = 180 * scale
@@ -146,12 +153,12 @@ def draw_capibara(pos, time_factor):
     body_rect = pygame.Rect(int(x - body_w/2), int(y - body_h/2 + bob), int(body_w), int(body_h))
     # Dibujar contorno grueso (primero el contorno más grande)
     outline_rect = body_rect.inflate(12 * scale, 12 * scale)
-    pygame.draw.ellipse(screen, outline_color, outline_rect)
-    pygame.draw.ellipse(screen, body_color, body_rect)
+    pygame.draw.ellipse(capibara_surf, outline_color, outline_rect)
+    pygame.draw.ellipse(capibara_surf, body_color, body_rect)
 
     # Barriga más clara
     belly_rect = body_rect.inflate(-40 * scale, -80 * scale)
-    pygame.draw.ellipse(screen, belly_color, belly_rect)
+    pygame.draw.ellipse(capibara_surf, belly_color, belly_rect)
 
     # Cabeza (más pequeña y redondeada, superpuesta)
     head_w = 70 * scale
@@ -159,38 +166,38 @@ def draw_capibara(pos, time_factor):
     head_x = x
     head_y = y - body_h/2 + 40 * scale + bob
     head_rect = pygame.Rect(int(head_x - head_w/2), int(head_y - head_h/2), int(head_w), int(head_h))
-    pygame.draw.ellipse(screen, outline_color, head_rect.inflate(10 * scale, 10 * scale))
-    pygame.draw.ellipse(screen, body_color, head_rect)
+    pygame.draw.ellipse(capibara_surf, outline_color, head_rect.inflate(10 * scale, 10 * scale))
+    pygame.draw.ellipse(capibara_surf, body_color, head_rect)
 
     # Orejas simples
     ear_w, ear_h = 26 * scale, 36 * scale
     left_ear = pygame.Rect(int(head_x - 30 * scale - ear_w/2), int(head_y - 40 * scale), int(ear_w), int(ear_h))
     right_ear = pygame.Rect(int(head_x + 30 * scale - ear_w/2), int(head_y - 40 * scale), int(ear_w), int(ear_h))
-    pygame.draw.ellipse(screen, outline_color, left_ear.inflate(6 * scale, 6 * scale))
-    pygame.draw.ellipse(screen, body_color, left_ear)
-    pygame.draw.ellipse(screen, outline_color, right_ear.inflate(6 * scale, 6 * scale))
-    pygame.draw.ellipse(screen, body_color, right_ear)
+    pygame.draw.ellipse(capibara_surf, outline_color, left_ear.inflate(6 * scale, 6 * scale))
+    pygame.draw.ellipse(capibara_surf, body_color, left_ear)
+    pygame.draw.ellipse(capibara_surf, outline_color, right_ear.inflate(6 * scale, 6 * scale))
+    pygame.draw.ellipse(capibara_surf, body_color, right_ear)
 
     # Ojos pequeños y simpáticos
     eye_y = head_y - 5 * scale
     eye_x_offset = 18 * scale
-    pygame.draw.circle(screen, BLACK, (int(head_x - eye_x_offset), int(eye_y)), int(6 * scale))
-    pygame.draw.circle(screen, BLACK, (int(head_x + eye_x_offset), int(eye_y)), int(6 * scale))
+    pygame.draw.circle(capibara_surf, BLACK, (int(head_x - eye_x_offset), int(eye_y)), int(6 * scale))
+    pygame.draw.circle(capibara_surf, BLACK, (int(head_x + eye_x_offset), int(eye_y)), int(6 * scale))
 
     # Nariz y hocico sencillo
     nose_w, nose_h = 26 * scale, 18 * scale
     nose_rect = pygame.Rect(int(head_x - nose_w/2), int(head_y + 2 * scale), int(nose_w), int(nose_h))
-    pygame.draw.ellipse(screen, outline_color, nose_rect.inflate(4 * scale, 4 * scale))
-    pygame.draw.ellipse(screen, nose_color, nose_rect)
+    pygame.draw.ellipse(capibara_surf, outline_color, nose_rect.inflate(4 * scale, 4 * scale))
+    pygame.draw.ellipse(capibara_surf, nose_color, nose_rect)
 
     # Boca (línea simple)
     mouth_start = (int(head_x - 10 * scale), int(head_y + 18 * scale))
     mouth_end = (int(head_x + 10 * scale), int(head_y + 18 * scale))
-    pygame.draw.arc(screen, outline_color, (mouth_start[0], mouth_start[1] - 6 * scale, 20 * scale, 12 * scale), 3.14, 0, int(3 * scale))
+    pygame.draw.arc(capibara_surf, outline_color, (mouth_start[0], mouth_start[1] - 6 * scale, 20 * scale, 12 * scale), 3.14, 0, int(3 * scale))
 
     # Bigotes (pocos puntitos alrededor del hocico)
     for dx in (-20 * scale, -10 * scale, 10 * scale, 20 * scale):
-        pygame.draw.circle(screen, outline_color, (int(head_x + dx), int(head_y + 6 * scale)), int(2 * scale))
+        pygame.draw.circle(capibara_surf, outline_color, (int(head_x + dx), int(head_y + 6 * scale)), int(2 * scale))
 
     # Patas delanteras (reposicionadas y con pequeña inclinación hacia dentro)
     paw_w, paw_h = 36 * scale, 24 * scale
@@ -220,20 +227,20 @@ def draw_capibara(pos, time_factor):
         hand = np.array([elbow[0] + hand_dx, elbow[1] + hand_dy])
 
         # dibujar segmentos gruesos como líneas con grosor, y círculos en articulaciones
-        pygame.draw.line(screen, outline_color, (shoulder_x, shoulder_y), tuple(elbow.astype(int)), arm_thickness)
-        pygame.draw.line(screen, outline_color, tuple(elbow.astype(int)), tuple(hand.astype(int)), arm_thickness)
+        pygame.draw.line(capibara_surf, outline_color, (shoulder_x, shoulder_y), tuple(elbow.astype(int)), arm_thickness)
+        pygame.draw.line(capibara_surf, outline_color, tuple(elbow.astype(int)), tuple(hand.astype(int)), arm_thickness)
         # rellenar interior del brazo (ligero offset) para simular el color del cuerpo
         # dibujar "relleno" central usando líneas más delgadas en body_color
-        pygame.draw.line(screen, body_color, (shoulder_x, shoulder_y), tuple(elbow.astype(int)), max(1, arm_thickness - 2))
-        pygame.draw.line(screen, body_color, tuple(elbow.astype(int)), tuple(hand.astype(int)), max(1, arm_thickness - 2))
+        pygame.draw.line(capibara_surf, body_color, (shoulder_x, shoulder_y), tuple(elbow.astype(int)), max(1, arm_thickness - 2))
+        pygame.draw.line(capibara_surf, body_color, tuple(elbow.astype(int)), tuple(hand.astype(int)), max(1, arm_thickness - 2))
 
         # articulaciones
-        pygame.draw.circle(screen, body_color, tuple(elbow.astype(int)), int(arm_thickness/2))
+        pygame.draw.circle(capibara_surf, body_color, tuple(elbow.astype(int)), int(arm_thickness/2))
         # mano (pequeña elipse)
         hand_rect = pygame.Rect(0, 0, int(paw_w), int(paw_h))
         hand_rect.center = (int(hand[0]), int(hand[1]))
-        pygame.draw.ellipse(screen, outline_color, hand_rect.inflate(int(4 * scale), int(4 * scale)))
-        pygame.draw.ellipse(screen, body_color, hand_rect)
+        pygame.draw.ellipse(capibara_surf, outline_color, hand_rect.inflate(int(4 * scale), int(4 * scale)))
+        pygame.draw.ellipse(capibara_surf, body_color, hand_rect)
 
     # hombros (ligeramente altos, cerca del pecho)
     shoulder_y = int(head_y + 10 * scale)
@@ -267,20 +274,20 @@ def draw_capibara(pos, time_factor):
         foot = np.array([knee[0] + foot_dx, knee[1] + foot_dy])
 
         # dibujar segmentos (contorno) y relleno interior
-        pygame.draw.line(screen, outline_color, (hip_x, hip_y), tuple(knee.astype(int)), leg_thickness)
-        pygame.draw.line(screen, outline_color, tuple(knee.astype(int)), tuple(foot.astype(int)), leg_thickness)
-        pygame.draw.line(screen, body_color, (hip_x, hip_y), tuple(knee.astype(int)), max(1, leg_thickness - 2))
-        pygame.draw.line(screen, body_color, tuple(knee.astype(int)), tuple(foot.astype(int)), max(1, leg_thickness - 2))
+        pygame.draw.line(capibara_surf, outline_color, (hip_x, hip_y), tuple(knee.astype(int)), leg_thickness)
+        pygame.draw.line(capibara_surf, outline_color, tuple(knee.astype(int)), tuple(foot.astype(int)), leg_thickness)
+        pygame.draw.line(capibara_surf, body_color, (hip_x, hip_y), tuple(knee.astype(int)), max(1, leg_thickness - 2))
+        pygame.draw.line(capibara_surf, body_color, tuple(knee.astype(int)), tuple(foot.astype(int)), max(1, leg_thickness - 2))
 
         # articulaciones
-        pygame.draw.circle(screen, body_color, (int(hip_x), int(hip_y)), int(leg_thickness/2))
-        pygame.draw.circle(screen, body_color, tuple(knee.astype(int)), int(leg_thickness/2))
+        pygame.draw.circle(capibara_surf, body_color, (int(hip_x), int(hip_y)), int(leg_thickness/2))
+        pygame.draw.circle(capibara_surf, body_color, tuple(knee.astype(int)), int(leg_thickness/2))
 
         # pie como pequeña elipse
         foot_rect = pygame.Rect(0, 0, int(34 * scale), int(18 * scale))
         foot_rect.center = (int(foot[0]), int(foot[1]))
-        pygame.draw.ellipse(screen, outline_color, foot_rect.inflate(int(4 * scale), int(4 * scale)))
-        pygame.draw.ellipse(screen, body_color, foot_rect)
+        pygame.draw.ellipse(capibara_surf, outline_color, foot_rect.inflate(int(4 * scale), int(4 * scale)))
+        pygame.draw.ellipse(capibara_surf, body_color, foot_rect)
 
     # dibujar pierna izquierda y derecha (mirrored)
     left_hip_x = int(x - hip_x_offset)
@@ -289,8 +296,11 @@ def draw_capibara(pos, time_factor):
     draw_leg(right_hip_x, hip_y, phase=1.6)
 
     # Boceto final: ojos con brillo
-    pygame.draw.circle(screen, WHITE, (int(head_x - eye_x_offset + 3 * scale), int(eye_y - 2 * scale)), int(2 * scale))
-    pygame.draw.circle(screen, WHITE, (int(head_x + eye_x_offset + 3 * scale), int(eye_y - 2 * scale)), int(2 * scale))
+    pygame.draw.circle(capibara_surf, WHITE, (int(head_x - eye_x_offset + 3 * scale), int(eye_y - 2 * scale)), int(2 * scale))
+    pygame.draw.circle(capibara_surf, WHITE, (int(head_x + eye_x_offset + 3 * scale), int(eye_y - 2 * scale)), int(2 * scale))
+
+    rotated_surf = pygame.transform.rotate(capibara_surf, np.degrees(rotation_angle))
+    screen.blit(rotated_surf, (pos[0] - rotated_surf.get_width()//2, pos[1] - rotated_surf.get_height()//2))
 
 # Bucle principal
 running = True
