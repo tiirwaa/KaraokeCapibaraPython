@@ -8,17 +8,17 @@ Este proyecto demuestra técnicas avanzadas en procesamiento de imágenes, gráf
 
 ## Capturas de Pantalla
 
-### Animación Capibara
-![Animación Capibara](screenshots/animacion_capibara.png)
+### Animación Poni
+![Animación Poni](screenshots/animacion_poni.png)
 
 ### Menú Principal
 ![Menú Principal](screenshots/menu.png)
 
 ### Color Picker
-![Color Picker](screenshots/color_picker.png)
+![Color Picker](screenshots/color_picker_poni.png)
 
 ### Point Picker
-![Point Picker](screenshots/point_picker.png)
+![Point Picker](screenshots/point_picker_poni.png)
 
 
 ## Tecnologías y Dependencias
