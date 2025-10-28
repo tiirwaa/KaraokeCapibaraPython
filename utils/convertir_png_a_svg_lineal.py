@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-def convertir_a_bezier(imagen_path, output_path):
+def convertir_png_a_svg_lineal(imagen_path, output_path):
     # Leer la imagen con canales alpha si existe
     img = cv2.imread(imagen_path, cv2.IMREAD_UNCHANGED)
     if img is None:
@@ -80,4 +80,4 @@ def convertir_a_bezier(imagen_path, output_path):
 
 # Uso del script
 if __name__ == "__main__":
-    convertir_a_bezier('dibujo.png', 'dibujo_bezier.svg')
+    convertir_png_a_svg_lineal('dibujo.png', 'dibujo_bezier.svg')

@@ -192,6 +192,7 @@ Si quieres ejecutar utilidades:
 python recreate_pngs.py
 python utils/color_picker.py
 python utils/point_picker.py
+python utils/png_to_bezier_gui.py
 ```
 
 Para regenerar las imágenes PNG que se usan como frames en la animación (workflow completo):
@@ -250,6 +251,7 @@ Utilidades en `utils/`:
 - `utils/point_picker.py` — Interfaz Pygame para marcar landmarks (guarda `res/txt/landmarks.json`).
 - `utils/convert_svg_to_bezier.py` — Convierte paths a curvas Bézier (Catmull-Rom → CubicBezier) usando `svgpathtools`.
 - `utils/convertir_dibujo_a_bezier.py` — Extrae contornos desde una imagen usando OpenCV y genera un SVG (paths lineales). Útil para vectorizar un dibujo escaneado.
+- `utils/png_to_bezier_gui.py` — Interfaz gráfica (tkinter) para convertir un PNG a SVG Bezier. Selecciona un PNG, lo procesa en dos pasos (raster a SVG lineal, luego a Bezier), y guarda el resultado en una carpeta elegida.
 - `utils/animar_svg_manim.py` — Escena Manim que carga `res/svg/salida_bezier.svg`, aplica colores desde `res/txt/colors.json` / `landmarks.json` y genera `SVGAnimation.mov`/PNGs. Requiere `manim` y `ffmpeg`.
 
 - Flujo para convertir un dibujo a la versión Bézier usada en la animación
@@ -271,6 +273,8 @@ python utils\convert_svg_to_bezier.py dibujo_bezier.svg res/svg/salida_bezier.sv
 Este script crea `salida_bezier.svg`, que es el SVG final con curvas cúbicas que usan `utils/animar_svg_manim.py` y `src/capibara_model.py`.
 
 Resumen: convertir_dibujo_a_bezier.py (raster -> SVG lineal) → convert_svg_to_bezier.py (SVG lineal -> SVG Bézier `salida_bezier.svg`) → animar_svg_manim.py / Manim para generar frames.
+
+Alternativamente, usa `python utils/png_to_bezier_gui.py` para una interfaz gráfica que automatiza estos pasos y permite elegir la carpeta de salida.
 
 Notas rápidas de compatibilidad y uso:
 - Para editar colores/landmarks antes de renderizar con Manim, usa `utils/color_picker.py` y `utils/point_picker.py`.
