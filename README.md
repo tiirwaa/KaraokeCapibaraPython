@@ -130,6 +130,9 @@ Esto abre un menú principal con interfaz tkinter que permite acceder a las sigu
 
 Este repositorio sirve como ejemplo práctico para el aprendizaje de integración de bibliotecas Python en pipelines de multimedia y gráficos.
 
+## Descargo de Responsabilidad
+
+Los derechos de la canción y la letra pertenecen a la página Canta y Baila. Referencia: [Enlace a YouTube](https://www.youtube.com/watch?v=KTAfB0-IKvU&list=RDKTAfB0-IKvU&start_radio=1)
 
 ## Autor
 
