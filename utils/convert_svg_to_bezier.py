@@ -5,7 +5,7 @@ Catmull-Rom -> Cubic Bezier y guarda un nuevo SVG.
 
 Uso:
     pip install svgpathtools
-    python3 convert_svg_to_bezier.py dibujo_bezier.svg salida_bezier.svg
+    python3 convert_svg_to_bezier.py lineal.svg salida_bezier.svg
 """
 import sys
 import math
@@ -99,7 +99,7 @@ def convert_svg(input_file, output_file, closed_guess=False):
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
-        print("Uso: python3 convert_svg_to_bezier.py dibujo_bezier.svg salida_bezier.svg")
+        print("Uso: python3 convert_svg_to_bezier.py lineal.svg salida_bezier.svg")
         sys.exit(1)
     input_svg = sys.argv[1]
     output_svg = sys.argv[2]

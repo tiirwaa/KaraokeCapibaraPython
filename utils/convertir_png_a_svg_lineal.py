@@ -80,4 +80,4 @@ def convertir_png_a_svg_lineal(imagen_path, output_path):
 
 # Uso del script
 if __name__ == "__main__":
-    convertir_png_a_svg_lineal('dibujo.png', 'dibujo_bezier.svg')
+    convertir_png_a_svg_lineal('dibujo.png', 'lineal.svg')
