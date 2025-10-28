@@ -81,16 +81,15 @@ Esto abre un menú principal con interfaz tkinter que permite acceder a las sigu
 - `utils/`: Utilidades técnicas:
   - `color_picker.py`: Asignación interactiva de colores a paths SVG.
   - `point_picker.py`: Marcado de landmarks en SVGs.
-  - `convertir_dibujo_a_bezier.py`: Vectorización de imágenes raster a SVG lineal con OpenCV.
+  - `convertir_png_a_svg_lineal.py`: Vectorización de imágenes raster a SVG lineal con OpenCV.
   - `convert_svg_to_bezier.py`: Conversión de paths SVG a curvas Bézier cúbicas.
   - `animar_svg_manim.py`: Escena Manim para animación basada en SVGs coloreados.
-  - `convertir_png_a_svg_lineal.py`: Función auxiliar para conversión PNG a SVG.
 
 ## Herramientas y Utilidades
 
 ### Pipeline de Conversión PNG → SVG
 
-1. **Vectorización raster a SVG lineal** (`convertir_dibujo_a_bezier.py`):
+1. **Vectorización raster a SVG lineal** (`convertir_png_a_svg_lineal.py`):
    - Usa OpenCV para extraer contornos de imágenes PNG.
    - Genera paths SVG con líneas poligonales.
 
