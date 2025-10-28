@@ -140,4 +140,4 @@ desktop.ini
 # highscores.json
 
 # Media/video outputs (no seguir grandes ficheros de vídeo generados)
-/media/videos/
+media/videos/
