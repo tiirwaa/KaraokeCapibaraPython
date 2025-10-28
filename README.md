@@ -131,9 +131,6 @@ Esto abre un menú principal con interfaz tkinter que permite acceder a las sigu
 
 Este repositorio sirve como ejemplo práctico para el aprendizaje de integración de bibliotecas Python en pipelines de multimedia y gráficos.
 
-## Contribución
-
-Si deseas contribuir, considera agregar tests unitarios, mejorar la documentación técnica o extender las utilidades de conversión.
 
 ## Autor
 
