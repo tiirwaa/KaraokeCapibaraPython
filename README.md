@@ -6,6 +6,20 @@ Repositorio para convertir PNGs a trazos vectoriales, generar/editar SVGs y prod
 
 Este proyecto demuestra técnicas avanzadas en procesamiento de imágenes, gráficos vectoriales y desarrollo de aplicaciones multimedia en Python, integrando bibliotecas científicas y de renderizado para crear pipelines de conversión y animación.
 
+## Capturas de Pantalla
+
+### Menú Principal
+![Menú Principal](screenshots/menu.png)
+
+### Color Picker
+![Color Picker](screenshots/color_picker.png)
+
+### Point Picker
+![Point Picker](screenshots/point_picker.png)
+
+### Animación Capibara
+![Animación Capibara](screenshots/animacion_capibara.png)
+
 ## Tecnologías y Dependencias
 
 - **Lenguaje**: Python 3.8+
