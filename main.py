@@ -30,8 +30,12 @@ def run_png_to_bezier():
 def run_recreate_pngs():
     messagebox.showinfo("Advertencia", 'Copia el archivo salida_bezier.svg generado por la herramienta "PNG TO BEZIER" a la carpeta res/svg/salida_bezier.svg antes de iniciar')
     root.withdraw()
-    subprocess.run([sys.executable, 'recreate_pngs.py'])
+    result = subprocess.run([sys.executable, 'recreate_pngs.py'], capture_output=True, text=True)
     root.deiconify()
+    if result.returncode == 0:
+        messagebox.showinfo("Éxito", "Proceso completado exitosamente.\n\n" + result.stdout.strip())
+    else:
+        messagebox.showerror("Error", "Ocurrió un error durante el proceso.\n\n" + result.stderr.strip())
 
 root = tk.Tk()
 root.title("Menú Principal - KaraokeCapibaraPython")
