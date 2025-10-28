@@ -8,6 +8,9 @@ Este proyecto demuestra técnicas avanzadas en procesamiento de imágenes, gráf
 
 ## Capturas de Pantalla
 
+### Animación Capibara
+![Animación Capibara](screenshots/animacion_capibara.png)
+
 ### Menú Principal
 ![Menú Principal](screenshots/menu.png)
 
@@ -17,8 +20,6 @@ Este proyecto demuestra técnicas avanzadas en procesamiento de imágenes, gráf
 ### Point Picker
 ![Point Picker](screenshots/point_picker.png)
 
-### Animación Capibara
-![Animación Capibara](screenshots/animacion_capibara.png)
 
 ## Tecnologías y Dependencias
 
