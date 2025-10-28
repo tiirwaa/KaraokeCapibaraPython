@@ -120,11 +120,15 @@ def nearest_path_index(pt, centers):
 
 
 def draw_color_picker(surf, selected_color_idx):
-    x_start = DEFAULT_WINDOW_SIZE[0] - 150
-    y_start = 50
+    x_start = DEFAULT_WINDOW_SIZE[0] - 200  # Adjusted for two columns
+    y_start = 140  # Moved down a bit
+    num_cols = 2
     for i, color in enumerate(COLORS):
-        rect = pygame.Rect(x_start, y_start + i * (COLOR_BUTTON_SIZE + COLOR_BUTTON_MARGIN),
-                           COLOR_BUTTON_SIZE, COLOR_BUTTON_SIZE)
+        col = i % num_cols
+        row = i // num_cols
+        x = x_start + col * (COLOR_BUTTON_SIZE + COLOR_BUTTON_MARGIN)
+        y = y_start + row * (COLOR_BUTTON_SIZE + COLOR_BUTTON_MARGIN)
+        rect = pygame.Rect(x, y, COLOR_BUTTON_SIZE, COLOR_BUTTON_SIZE)
         pygame.draw.rect(surf, color, rect)
         if i == selected_color_idx:
             pygame.draw.rect(surf, (255, 255, 255), rect, 3)  # Highlight selected
@@ -154,9 +158,9 @@ def run_color_picker():
 
     info_lines = [
         'Instrucciones:',
-        'Click izquierdo en SVG: rellenar path cerrado más cercano',
-        'Click en colores: seleccionar color',
-        's=guardar, q o ESC=salir',
+        'Click: colorear',
+        'Colores: seleccionar',
+        's=guardar, q/ESC=salir',
     ]
 
     running = True
@@ -180,12 +184,16 @@ def run_color_picker():
                 if event.button == 1:  # left click
                     mx, my = event.pos
                     # Check if clicked on color picker
-                    x_start = DEFAULT_WINDOW_SIZE[0] - 150
-                    y_start = 50
+                    x_start = DEFAULT_WINDOW_SIZE[0] - 200
+                    y_start = 140
+                    num_cols = 2
                     clicked_color = False
                     for i in range(len(COLORS)):
-                        rect = pygame.Rect(x_start, y_start + i * (COLOR_BUTTON_SIZE + COLOR_BUTTON_MARGIN),
-                                           COLOR_BUTTON_SIZE, COLOR_BUTTON_SIZE)
+                        col = i % num_cols
+                        row = i // num_cols
+                        x = x_start + col * (COLOR_BUTTON_SIZE + COLOR_BUTTON_MARGIN)
+                        y = y_start + row * (COLOR_BUTTON_SIZE + COLOR_BUTTON_MARGIN)
+                        rect = pygame.Rect(x, y, COLOR_BUTTON_SIZE, COLOR_BUTTON_SIZE)
                         if rect.collidepoint(mx, my):
                             selected_color_idx = i
                             selected_color = COLORS[i]
@@ -207,7 +215,7 @@ def run_color_picker():
         # Draw instructions
         for i, line in enumerate(info_lines):
             surf = font.render(line, True, FONT_COLOR)
-            screen.blit(surf, (DEFAULT_WINDOW_SIZE[0] - 180, 50 + len(COLORS) * (COLOR_BUTTON_SIZE + COLOR_BUTTON_MARGIN) + 20 + i * 22))
+            screen.blit(surf, (DEFAULT_WINDOW_SIZE[0] - 220, 50 + i * 22))
 
         # Draw selected color info
         color_text = f'Color seleccionado: {selected_color}'
