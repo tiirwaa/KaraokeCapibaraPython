@@ -305,7 +305,6 @@ class SVGAnimation(Scene):
             sub = submobj(idx)
             if sub is not None:
                 # Diagnostic prints: show the raw rgb loaded from JSON and its type
-                print(f"DEBUG: path {idx} - raw RGB from json: {rgb} (type={type(rgb)})")
                 if rgb == [255, 255, 255]:
                     to_remove.append(sub)
                     print(f"Removing white path {idx}")
@@ -326,7 +325,6 @@ class SVGAnimation(Scene):
                         internal_color = tuple(sub.fill_color)
                     except Exception:
                         internal_color = getattr(sub, 'fill_color', None)
-                    print(f"DEBUG: path {idx} - after set_fill, sub.fill_color = {internal_color} (type={type(internal_color)})")
                     print(f"Set path {idx} to color {rgb}")
 
         print(f"Applied individual colors. Submobjects with fill: {len([s for s in svg.submobjects if s.fill_opacity > 0])}")
