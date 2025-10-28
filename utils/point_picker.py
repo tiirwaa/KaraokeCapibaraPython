@@ -4,9 +4,11 @@ import json
 import math
 import numpy as np
 from svgpathtools import svg2paths
+import os
 
-SVG_PATH = '../res/svg/salida_bezier.svg'
-OUTPUT_JSON = '../res/txt/landmarks.json'
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+SVG_PATH = os.path.join(SCRIPT_DIR, '..', 'res', 'svg', 'salida_bezier.svg')
+OUTPUT_JSON = os.path.join(SCRIPT_DIR, '..', 'res', 'txt', 'landmarks.json')
 DEFAULT_WINDOW_SIZE = (1200, 900)
 BACKGROUND = (30, 30, 30)
 DRAW_COLOR = (240, 240, 240)

@@ -154,6 +154,16 @@ Controles:
 
 ```
 
+- Convertir PNG a SVG Bezier:
+
+  ```powershell
+
+  python utils/png_to_bezier_gui.py
+
+  ```
+
+  Interfaz gráfica para convertir un PNG a SVG Bezier. Selecciona un archivo PNG y una carpeta de salida; el proceso automatiza la conversión en dos pasos (raster a SVG lineal, luego a Bezier).
+
 ### Regenerar Animación
 
 ```powershell3. Instala dependencias:
@@ -280,15 +290,7 @@ Notas rápidas de compatibilidad y uso:
 - Para editar colores/landmarks antes de renderizar con Manim, usa `utils/color_picker.py` y `utils/point_picker.py`.
 - Si no tienes `capibara.wav`, la animación arranca sin audio pero las letras y la sincronización dependerán de `pygame.mixer.music.get_pos()` en `src/game.py`.
 
-Si quieres, puedo también:
-- Ejecutar una prueba rápida (arrancar `main.py`) y reportar errores/advertencias.
-- Añadir una breve comprobación al arranque para avisar recursos faltantes (por ejemplo: svg, wav, frames).
-
 ## Autor
 Andrey Rodríguez Araya
 
 ---
-
-Si quieres, puedo también:
-- Ejecutar una prueba rápida (arrancar `main.py`) y reportar errores/advertencias.
-- Añadir sección `CONTRIBUTING.md` o un archivo `SUPPORT.md` con instrucciones de depuración.

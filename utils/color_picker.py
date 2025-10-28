@@ -9,8 +9,9 @@ from svgpathtools import svg2paths
 import os
 os.environ['SDL_VIDEODRIVER'] = 'windib'
 
-SVG_PATH = '../res/svg/salida_bezier.svg'
-OUTPUT_JSON = '../res/txt/colors.json'
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+SVG_PATH = os.path.join(SCRIPT_DIR, '..', 'res', 'svg', 'salida_bezier.svg')
+OUTPUT_JSON = os.path.join(SCRIPT_DIR, '..', 'res', 'txt', 'colors.json')
 DEFAULT_WINDOW_SIZE = (1024, 768)  # Adjusted window size
 BACKGROUND = (30, 30, 30)
 DRAW_COLOR = (240, 240, 240)
