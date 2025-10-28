@@ -242,21 +242,63 @@ class SVGAnimation(Scene):
         right_cheek_subs = [submobj(i) for i in right_cheek_idxs if submobj(i) is not None]
         forehead_subs = [submobj(i) for i in forehead_idxs if submobj(i) is not None]
 
+        # Load colors from JSON
+        colors_path = 'res/txt/colors.json'
+        try:
+            with open(colors_path, 'r', encoding='utf-8') as f:
+                color_data = json.load(f)
+                path_colors = color_data.get('path_colors', {})
+        except Exception as e:
+            print(f'Warning: could not load {colors_path}: {e}')
+            path_colors = {}
+
+        print("Loaded path_colors from json:", path_colors)
+
+        # Collect submobjects to remove if color is white (255,255,255)
+        to_remove = []
+
+        # Apply colors to individual paths
+        for idx_str, rgb in path_colors.items():
+            idx = int(idx_str)
+            sub = submobj(idx)
+            if sub is not None:
+                if rgb == [255, 255, 255]:
+                    to_remove.append(sub)
+                    print(f"Removing white path {idx}")
+                else:
+                    sub.set_fill(rgb, opacity=1)
+                    print(f"Set path {idx} to color {rgb}")
+
+        print(f"Applied individual colors. Submobjects with fill: {len([s for s in svg.submobjects if s.fill_opacity > 0])}")
+
         # Crear grupos
         head_group = VGroup(*[s for s in head_subs + [neck_sub, left_ear_sub, right_ear_sub, left_eye_sub, right_eye_sub, nose_sub, mouth_sub] + left_cheek_subs + right_cheek_subs + forehead_subs if s is not None])
         body_group = VGroup(*[s for s in [chest_sub, abdomen_sub, back_sub] if s is not None])
         tail_group = VGroup(tail_sub) if tail_sub else VGroup()
         glasses_group = VGroup(*[s for s in left_glasses_subs + right_glasses_subs if s is not None])
 
-        # Asignar colores naturales
-        if head_group:
-            head_group.set_fill("#D2691E", opacity=1)  # Chocolate (marrón claro)
-        if body_group:
-            body_group.set_fill("#8B4513", opacity=1)  # SaddleBrown (marrón)
-        if legs:
-            legs.set_fill("#654321", opacity=1)  # Dark brown
-        if tail_group:
-            tail_group.set_fill("#D2691E", opacity=1)  # Chocolate
+        # Apply group colors based on individual colors in the group to correct correlation
+        def apply_group_color_from_individual(group):
+            colors_in_group = [tuple(sub.fill_color) for sub in group.submobjects if sub.fill_opacity > 0]
+            unique_colors = list(set(colors_in_group))
+            if len(unique_colors) == 1:
+                group_color = [int(c) for c in unique_colors[0]]
+                for sub in group.submobjects:
+                    sub.set_fill(group_color, opacity=1)
+                print(f"Set group to color {group_color}")
+
+        apply_group_color_from_individual(head_group)
+        apply_group_color_from_individual(body_group)
+        apply_group_color_from_individual(tail_group)
+        apply_group_color_from_individual(legs)
+
+        # For glasses, set to black if any is colored black, else keep
+        glasses_colors = [tuple(sub.fill_color) for sub in glasses_group.submobjects if sub.fill_opacity > 0]
+        if (0,0,0) in glasses_colors:
+            for sub in glasses_group.submobjects:
+                sub.set_fill(BLACK, opacity=1)
+
+        print(f"After group colors. Submobjects with fill: {len([s for s in svg.submobjects if s.fill_opacity > 0])}")
 
         # Colores específicos para ojos, nariz, boca
         if left_eye_sub:
@@ -288,6 +330,27 @@ class SVGAnimation(Scene):
         tail_point = np.array([tail_center[0] * 5, tail_center[1] * 5, 0])
 
         print("Regenerating animation with updated glasses coloring 3")
+
+        # Remove submobjects with white color
+        for sub in to_remove:
+            svg.remove(sub)
+        print(f"Removed {len(to_remove)} white paths. Total submobjects now: {len(svg.submobjects)}")
+
+        # Ensure all submobjects have fill to avoid transparent (blue) areas
+        default_set = 0
+        for sub in svg.submobjects:
+            if sub.fill_opacity == 0:
+                sub.set_fill((240, 240, 240), opacity=1)  # Default to light gray for uncolored parts, matching color_picker
+                default_set += 1
+        print(f"Set default color to {default_set} uncolored submobjects. Total colored: {len([s for s in svg.submobjects if s.fill_opacity > 0])}")
+
+        # Collect unique colors for debugging
+        colors_used = set()
+        for sub in svg.submobjects:
+            if sub.fill_opacity > 0:
+                colors_used.add(tuple(sub.fill_color))
+        print(f"Unique colors used: {sorted(colors_used)}")
+
         self.add(svg)
         self.wait(1)
 

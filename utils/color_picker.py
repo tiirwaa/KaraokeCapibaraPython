@@ -5,6 +5,10 @@ import math
 import numpy as np
 from svgpathtools import svg2paths
 
+# Add environment variable for Windows
+import os
+os.environ['SDL_VIDEODRIVER'] = 'windib'
+
 SVG_PATH = '../res/svg/salida_bezier.svg'
 OUTPUT_JSON = '../res/txt/colors.json'
 DEFAULT_WINDOW_SIZE = (1024, 768)  # Adjusted window size
@@ -25,6 +29,7 @@ COLORS = [
     (128, 0, 128),  # Purple
     (0, 128, 0),    # Dark Green
     (128, 128, 128),# Gray
+    (139, 69, 19),  # Brown
     (0, 0, 0),      # Black
     (255, 255, 255),# White
 ]
@@ -87,20 +92,15 @@ class SVGRenderer:
     def draw(self, surf, path_colors=None):
         if path_colors is None:
             path_colors = {}
-        # Draw sampled path points as filled polygons for closed paths, lines for open
+        # Draw sampled path points as lines (no fill) for all paths
         for i, path in enumerate(self.paths):
             color = path_colors.get(i, DRAW_COLOR)
             pts = []
             for t in np.linspace(0, 1, SAMPLE_POINTS_PER_PATH):
                 p = path.point(t)
                 pts.append(self.svg_to_screen(p.real, p.imag))
-            if path.isclosed() and len(pts) >= 3:
-                # For closed paths, fill as polygon
-                pygame.draw.polygon(surf, color, pts)
-            else:
-                # For open paths, draw as lines
-                if len(pts) >= 2:
-                    pygame.draw.aalines(surf, color, False, pts)
+            if len(pts) >= 2:
+                pygame.draw.aalines(surf, color, path.isclosed(), pts)
 
 
 def compute_path_centers(paths):
