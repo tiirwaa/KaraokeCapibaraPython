@@ -138,3 +138,6 @@ desktop.ini
 # Game specific files
 # Uncomment if you don't want to track highscores
 # highscores.json
+
+# Media/video outputs (no seguir grandes ficheros de vídeo generados)
+/media/videos/
