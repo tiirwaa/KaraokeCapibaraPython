@@ -83,6 +83,12 @@ class PNGToBezierGUI:
             if os.path.exists(temp_svg):
                 os.remove(temp_svg)
 
+            # Borrar archivos colors.json y landmarks.json
+            if os.path.exists("res/txt/colors.json"):
+                os.remove("res/txt/colors.json")
+            if os.path.exists("res/txt/landmarks.json"):
+                os.remove("res/txt/landmarks.json")
+
             messagebox.showinfo("Éxito", f"Conversión completada. Archivo guardado en {final_svg}")
         except Exception as e:
             messagebox.showerror("Error", f"Ocurrió un error: {str(e)}")
