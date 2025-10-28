@@ -6,9 +6,15 @@ import shutil
 def recreate_pngs():
     # Step 1: Generate the video MOV with Manim
     print("Generating video with Manim...")
+    # Run Manim and show its stdout/stderr so diagnostic prints are visible
     result = subprocess.run(["python", "utils/animar_svg_manim.py"], capture_output=True, text=True)
+    # Print Manim stdout/stderr to console so debug prints in the script are visible
+    if result.stdout:
+        print(result.stdout)
+    if result.stderr:
+        print(result.stderr)
     if result.returncode != 0:
-        print("Error generating video:", result.stderr)
+        print("Error generating video: return code", result.returncode)
         return
     print("Video generated successfully.")
 

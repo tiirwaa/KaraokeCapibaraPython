@@ -46,6 +46,48 @@ class SVGAnimation(Scene):
             ys = [p.imag for p in pts]
             return (sum(xs)/len(xs), sum(ys)/len(ys))
 
+
+        def norm_color(rgb):
+            """Normalize a color to a list of floats in 0..1 suitable for Manim.set_fill.
+            Accepts:
+              - list/tuple of 3 ints (0..255)
+              - list/tuple of 3 floats (0..1)
+              - list/tuple of 4 floats/ints (RGBA)
+            Returns list of 3 floats [R,G,B] or None on bad input.
+            """
+            if rgb is None:
+                return None
+            try:
+                # If it's something like numpy types, convert to native python numbers
+                rgb_list = list(rgb)
+            except Exception:
+                return None
+            if len(rgb_list) >= 3:
+                r, g, b = rgb_list[0], rgb_list[1], rgb_list[2]
+                try:
+                    # If values appear to be integers > 1, assume 0..255 and convert to hex
+                    def to_int(x):
+                        try:
+                            return int(x)
+                        except Exception:
+                            return 0
+
+                    if any(isinstance(c, (int,)) and c > 1 for c in (r, g, b)):
+                        ri, gi, bi = to_int(r), to_int(g), to_int(b)
+                    else:
+                        # assume floats 0..1 -> convert to 0..255
+                        ri = int(round(float(r) * 255.0))
+                        gi = int(round(float(g) * 255.0))
+                        bi = int(round(float(b) * 255.0))
+                    # clamp
+                    ri = max(0, min(255, ri))
+                    gi = max(0, min(255, gi))
+                    bi = max(0, min(255, bi))
+                    return "#{:02X}{:02X}{:02X}".format(ri, gi, bi)
+                except Exception:
+                    return None
+            return None
+
         path_centers = [path_center(p) for p in paths]
 
         def nearest_path_indices(pt, k=2):
@@ -262,11 +304,29 @@ class SVGAnimation(Scene):
             idx = int(idx_str)
             sub = submobj(idx)
             if sub is not None:
+                # Diagnostic prints: show the raw rgb loaded from JSON and its type
+                print(f"DEBUG: path {idx} - raw RGB from json: {rgb} (type={type(rgb)})")
                 if rgb == [255, 255, 255]:
                     to_remove.append(sub)
                     print(f"Removing white path {idx}")
                 else:
-                    sub.set_fill(rgb, opacity=1)
+                    # Apply as-is (no behavior change) but then print what Manim stored
+                    try:
+                        # Normalize rgb (0..255 ints -> 0..1 floats) before passing to Manim
+                        normalized = norm_color(rgb)
+                        if normalized is None:
+                            # fallback to original value if normalization failed
+                            sub.set_fill(rgb, opacity=1)
+                        else:
+                            sub.set_fill(normalized, opacity=1)
+                    except Exception as e:
+                        print(f"DEBUG: Error calling set_fill on path {idx} with {rgb}: {e}")
+                    # After calling set_fill, inspect the object's fill_color (how Manim interpreted it)
+                    try:
+                        internal_color = tuple(sub.fill_color)
+                    except Exception:
+                        internal_color = getattr(sub, 'fill_color', None)
+                    print(f"DEBUG: path {idx} - after set_fill, sub.fill_color = {internal_color} (type={type(internal_color)})")
                     print(f"Set path {idx} to color {rgb}")
 
         print(f"Applied individual colors. Submobjects with fill: {len([s for s in svg.submobjects if s.fill_opacity > 0])}")
@@ -279,12 +339,29 @@ class SVGAnimation(Scene):
 
         # Apply group colors based on individual colors in the group to correct correlation
         def apply_group_color_from_individual(group):
-            colors_in_group = [tuple(sub.fill_color) for sub in group.submobjects if sub.fill_opacity > 0]
+            # Diagnostic: inspect what colors individual submobjects have (as stored internally)
+            colors_in_group = []
+            for sub in group.submobjects:
+                if sub.fill_opacity > 0:
+                    try:
+                        colors_in_group.append(tuple(sub.fill_color))
+                    except Exception:
+                        colors_in_group.append(getattr(sub, 'fill_color', None))
             unique_colors = list(set(colors_in_group))
-            if len(unique_colors) == 1:
-                group_color = [int(c) for c in unique_colors[0]]
-                for sub in group.submobjects:
-                    sub.set_fill(group_color, opacity=1)
+            print(f"DEBUG: group {group} - colors_in_group={colors_in_group} unique_colors={unique_colors}")
+            if len(unique_colors) == 1 and unique_colors[0] is not None:
+                # Compute a proper group_color normalized to 0..1 floats
+                col = unique_colors[0]
+                # col may be (r,g,b,a) or (r,g,b)
+                try:
+                    col3 = tuple(col[:3])
+                except Exception:
+                    col3 = None
+                group_color = norm_color(col3) if col3 is not None else None
+                print(f"DEBUG: group {group} - computed normalized group_color = {group_color}")
+                if group_color is not None:
+                    for sub in group.submobjects:
+                        sub.set_fill(group_color, opacity=1)
                 print(f"Set group to color {group_color}")
 
         apply_group_color_from_individual(head_group)
