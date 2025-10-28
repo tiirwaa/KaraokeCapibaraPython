@@ -112,7 +112,7 @@ def run_picker():
     screen_h = min(DEFAULT_WINDOW_SIZE[1], max(400, info.current_h - 120))
     window_size = (screen_w, screen_h)
     screen = pygame.display.set_mode(window_size, pygame.RESIZABLE)
-    pygame.display.set_caption('Capibara Landmark Picker')
+    pygame.display.set_caption('KaraokeCapibaraPython Landmark Picker')
     clock = pygame.time.Clock()
     font = pygame.font.Font(None, 28)
 

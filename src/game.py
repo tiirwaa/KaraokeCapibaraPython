@@ -19,7 +19,7 @@ class Game:
         self.width = width
         self.height = height
         self.screen = pygame.display.set_mode((width, height))
-        pygame.display.set_caption("Capibara Bailando")
+        pygame.display.set_caption("KaraokeCapibaraPython")
         self.clock = pygame.time.Clock()
 
         self.audio_manager = AudioManager()

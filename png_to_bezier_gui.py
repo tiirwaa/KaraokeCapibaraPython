@@ -7,13 +7,27 @@ import numpy as np
 from svgpathtools import svg2paths, wsvg, Path, CubicBezier
 import math
 from utils.convertir_png_a_svg_lineal import convertir_png_a_svg_lineal
-from utils.convert_svg_to_bezier import convert_svg
-
 class PNGToBezierGUI:
+    """
+    Esta clase crea un diálogo gráfico para convertir imágenes PNG en curvas de Bézier a través de SVG.
+    
+    Realiza dos pasos principales:
+    1. Convierte el PNG seleccionado en un SVG lineal utilizando la función convertir_png_a_svg_lineal.
+    2. Convierte el SVG lineal en curvas de Bézier utilizando la función convert_svg.
+    """
     def __init__(self, root):
         self.root = root
-        self.root.title("PNG to Bezier Converter")
-        self.root.geometry("400x200")
+        self.root.title("KaraokeCapibaraPython PNG to Bezier Converter")
+        width = 500
+        height = 400
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+        x = (screen_width - width) // 2
+        y = (screen_height - height) // 2
+        self.root.geometry(f"{width}x{height}+{x}+{y}")
+
+        self.info_label = tk.Label(root, text="Esta aplicación convierte imágenes PNG en curvas de Bézier a través de SVG.\n\nRealiza dos pasos:\n1. Convierte el PNG seleccionado en un SVG lineal.\n2. Convierte el SVG lineal en curvas de Bézier.\n\nLas curvas de Bézier son curvas matemáticas definidas por puntos de control que permiten crear formas suaves y escalables, ideales para gráficos vectoriales.", justify=tk.LEFT, wraplength=380)
+        self.info_label.pack(pady=10)
 
         self.png_path = None
         self.output_folder = None

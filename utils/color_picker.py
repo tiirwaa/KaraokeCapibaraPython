@@ -133,7 +133,7 @@ def draw_color_picker(surf, selected_color_idx):
 def run_color_picker():
     pygame.init()
     screen = pygame.display.set_mode(DEFAULT_WINDOW_SIZE, pygame.RESIZABLE)
-    pygame.display.set_caption('Capibara SVG Color Picker')
+    pygame.display.set_caption('KaraokeCapibaraPython SVG Color Picker')
     clock = pygame.time.Clock()
     font = pygame.font.Font(None, 28)
 
