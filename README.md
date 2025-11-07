@@ -1,18 +1,20 @@
 # KaraokeCapibaraPython
 
-## Descripción
+For the Spanish version, see [README.es.md](README.es.md).
 
-Repositorio para convertir PNGs a trazos vectoriales, generar/editar SVGs y producir animaciones y recursos multimedia. Incluye herramientas GUI, utilidades de conversión, y código para reproducir/organizar audio y letra para animaciones.
+## Description
 
-Este proyecto demuestra técnicas avanzadas en procesamiento de imágenes, gráficos vectoriales y desarrollo de aplicaciones multimedia en Python, integrando bibliotecas científicas y de renderizado para crear pipelines de conversión y animación.
+Repository for converting PNGs to vector strokes, generating/editing SVGs, and producing animations and multimedia resources. Includes GUI tools, conversion utilities, and code for playing/organizing audio and lyrics for animations.
 
-## Capturas de Pantalla
+This project demonstrates advanced techniques in image processing, vector graphics, and multimedia application development in Python, integrating scientific and rendering libraries to create conversion and animation pipelines.
 
-### Animación Capibara
-![Animación Capibara](screenshots/animacion_capibara.png)
+## Screenshots
 
-### Menú Principal
-![Menú Principal](screenshots/menu.png)
+### Capibara Animation
+![Capibara Animation](screenshots/animacion_capibara.png)
+
+### Main Menu
+![Main Menu](screenshots/menu.png)
 
 ### Color Picker
 ![Color Picker](screenshots/color_picker.png)
@@ -20,122 +22,119 @@ Este proyecto demuestra técnicas avanzadas en procesamiento de imágenes, gráf
 ### Point Picker
 ![Point Picker](screenshots/point_picker.png)
 
+## Technologies and Dependencies
 
-## Tecnologías y Dependencias
+- **Language**: Python 3.8+
+- **Main Libraries**:
+  - `pygame`: Real-time rendering, audio management, and events.
+  - `numpy`: Mathematical calculations and array manipulation.
+  - `Pillow`: Basic image processing.
+  - `opencv-python`: Contour extraction and raster image vectorization.
+  - `svgpathtools`: Manipulation and conversion of SVG paths, including Bézier curves.
+  - `manim`: Generation of mathematical animations and frame extraction.
+  - `tkinter`: Native graphical interfaces (included in Python standard).
+  - `tkfontawesome`: Icons for tkinter interfaces.
+- **External Tools**:
+  - `ffmpeg`: Video frame extraction.
 
-- **Lenguaje**: Python 3.8+
-- **Bibliotecas principales**:
-  - `pygame`: Renderizado en tiempo real, gestión de audio y eventos.
-  - `numpy`: Cálculos matemáticos y manipulación de arrays.
-  - `Pillow`: Procesamiento básico de imágenes.
-  - `opencv-python`: Extracción de contornos y vectorización de imágenes raster.
-  - `svgpathtools`: Manipulación y conversión de paths SVG, incluyendo curvas Bézier.
-  - `manim`: Generación de animaciones matemáticas y extracción de frames.
-  - `tkinter`: Interfaces gráficas nativas (incluido en Python estándar).
-  - `tkfontawesome`: Iconos para interfaces tkinter.
-- **Herramientas externas**:
-  - `ffmpeg`: Extracción de frames de video.
+## Installation
 
-## Instalación
-
-1. Clona o descarga el repositorio.
-2. Crea un entorno virtual (recomendado):
+1. Clone or download the repository.
+2. Create a virtual environment (recommended):
    ```powershell
    python -m venv .venv
    .\.venv\Scripts\Activate.ps1
    ```
-3. Instala dependencias:
+3. Install dependencies:
    ```powershell
    pip install -r requirements.txt
    ```
-4. Asegúrate de tener recursos como `res/txt/letra.txt` y `res/wav/capibara.wav` (opcional). Para desarrollo, instala `manim` y `ffmpeg` si deseas regenerar animaciones.
+4. Ensure you have resources like `res/txt/letra.txt` and `res/wav/capibara.wav` (optional). For development, install `manim` and `ffmpeg` if you want to regenerate animations.
 
-## Uso
+## Usage
 
-Ejecuta desde la raíz del repositorio:
+Run from the repository root:
 
 ```powershell
 python main.py
 ```
 
-Esto abre un menú principal con interfaz tkinter que permite acceder a las siguientes funcionalidades:
+This opens a main menu with a tkinter interface that allows access to the following functionalities:
 
-- **Reproducir karaoke capibara**: Inicia la aplicación principal de animación y sincronización de audio/letra.
-- **Color Picker**: Herramienta interactiva para asignar colores a paths SVG.
-- **Point Picker**: Herramienta para marcar landmarks (puntos de referencia) en SVGs.
-- **Convertir dibujo PNG a SVG Bezier**: Interfaz gráfica para convertir imágenes PNG a SVGs con curvas Bézier.
+- **Play capibara karaoke**: Starts the main animation and audio/lyrics synchronization application.
+- **Color Picker**: Interactive tool for assigning colors to SVG paths.
+- **Point Picker**: Tool for marking landmarks (reference points) in SVGs.
+- **Convert PNG drawing to SVG Bézier**: Graphical interface for converting PNG images to SVGs with Bézier curves.
 
-## Estructura del Proyecto
+## Project Structure
 
-- `main.py`: Menú principal con interfaz gráfica (tkinter) para acceder a las herramientas.
-- `png_to_bezier_gui.py`: GUI para conversión automática PNG → SVG lineal → SVG Bézier.
-- `recreate_pngs.py`: Script para regenerar animaciones: ejecuta Manim y extrae frames con ffmpeg.
-- `requirements.txt`: Lista de dependencias Python.
-- `res/`: Recursos estáticos (SVGs, textos, colores, audio).
-- `media/`: Medios generados (imágenes, videos).
-- `src/`: Código fuente principal:
-  - `audio.py`: Gestión de audio con `pygame.mixer`.
-  - `capibara_model.py`: Carga y renderizado de frames PNG, cálculo de centros con `svgpathtools`.
-  - `game.py`: Bucle principal, eventos y composición de escena.
-  - `lyrics.py`: Procesamiento y sincronización de letras.
-- `utils/`: Utilidades técnicas:
-  - `color_picker.py`: Asignación interactiva de colores a paths SVG.
-  - `point_picker.py`: Marcado de landmarks en SVGs.
-  - `convertir_png_a_svg_lineal.py`: Vectorización de imágenes raster a SVG lineal con OpenCV.
-  - `convert_svg_to_bezier.py`: Conversión de paths SVG a curvas Bézier cúbicas.
-  - `animar_svg_manim.py`: Escena Manim para animación basada en SVGs coloreados.
+- `main.py`: Main menu with graphical interface (tkinter) to access tools.
+- `png_to_bezier_gui.py`: GUI for automatic PNG → SVG linear → SVG Bézier conversion.
+- `recreate_pngs.py`: Script to regenerate animations: runs Manim and extracts frames with ffmpeg.
+- `requirements.txt`: List of Python dependencies.
+- `res/`: Static resources (SVGs, texts, colors, audio).
+- `media/`: Generated media (images, videos).
+- `src/`: Main source code:
+  - `audio.py`: Audio management with `pygame.mixer`.
+  - `capibara_model.py`: Loading and rendering of PNG frames, center calculation with `svgpathtools`.
+  - `game.py`: Main loop, events, and scene composition.
+  - `lyrics.py`: Processing and synchronization of lyrics.
+- `utils/`: Technical utilities:
+  - `color_picker.py`: Interactive color assignment to SVG paths.
+  - `point_picker.py`: Landmark marking in SVGs.
+  - `convertir_png_a_svg_lineal.py`: Raster image vectorization to linear SVG with OpenCV.
+  - `convert_svg_to_bezier.py`: Conversion of SVG paths to cubic Bézier curves.
+  - `animar_svg_manim.py`: Manim scene for animation based on colored SVGs.
 
-## Herramientas y Utilidades
+## Tools and Utilities
 
-### Pipeline de Conversión PNG → SVG
+### PNG → SVG Conversion Pipeline
 
-1. **Vectorización raster a SVG lineal** (`convertir_png_a_svg_lineal.py`):
-   - Usa OpenCV para extraer contornos de imágenes PNG.
-   - Genera paths SVG con líneas poligonales.
+1. **Raster to linear SVG vectorization** (`convertir_png_a_svg_lineal.py`):
+   - Uses OpenCV to extract contours from PNG images.
+   - Generates SVG paths with polygonal lines.
 
-2. **Conversión a curvas Bézier** (`convert_svg_to_bezier.py`):
-   - Emplea `svgpathtools` para convertir líneas a curvas cúbicas Bézier usando aproximación Catmull-Rom.
+2. **Conversion to Bézier curves** (`convert_svg_to_bezier.py`):
+   - Uses `svgpathtools` to convert lines to cubic Bézier curves using Catmull-Rom approximation.
 
-3. **Interfaz gráfica unificada** (`png_to_bezier_gui.py`):
-   - Automatiza los pasos anteriores en una GUI tkinter.
+3. **Unified graphical interface** (`png_to_bezier_gui.py`):
+   - Automates the previous steps in a tkinter GUI.
 
-### Edición Interactiva de SVGs
+### Interactive SVG Editing
 
 - **Color Picker** (`color_picker.py`):
-  - Renderiza SVG en Pygame, permite selección de colores y asignación a paths cerrados.
-  - Guarda mapeo en JSON para uso en animaciones.
+  - Renders SVG in Pygame, allows color selection and assignment to closed paths.
+  - Saves mapping in JSON for use in animations.
 
 - **Point Picker** (`point_picker.py`):
-  - Interfaz para marcar puntos de referencia (landmarks) en SVGs.
-  - Facilita el mapeo de partes anatómicas para animaciones precisas.
+  - Interface for marking reference points (landmarks) in SVGs.
+  - Facilitates mapping of anatomical parts for precise animations.
 
-### Generación de Animaciones
+### Animation Generation
 
 - **Manim Scene** (`animar_svg_manim.py`):
-  - Carga SVGs coloreados, aplica landmarks para deformaciones.
-  - Produce video MOV y extrae frames PNG.
+  - Loads colored SVGs, applies landmarks for deformations.
+  - Produces MOV video and extracts PNG frames.
 
-- **Regeneración completa** (`recreate_pngs.py`):
-  - Ejecuta Manim y ffmpeg para actualizar recursos de animación.
+- **Complete regeneration** (`recreate_pngs.py`):
+  - Runs Manim and ffmpeg to update animation resources.
 
-## Notas Técnicas
+## Technical Notes
 
-- **Procesamiento de Imágenes**: Integración de OpenCV para análisis morfológico y extracción de características.
-- **Gráficos Vectoriales**: Uso de `svgpathtools` para geometría computacional y curvas paramétricas.
-- **Animación Matemática**: Manim para visualización de transformaciones basadas en landmarks.
-- **Interfaz y Usabilidad**: Tkinter para GUIs accesibles, Pygame para renderizado interactivo.
-- **Audio y Sincronización**: `pygame.mixer` para playback, con timestamps para alineación de letra.
-- **Compatibilidad**: Configurado para Windows (e.g., `SDL_VIDEODRIVER=windib` en Pygame).
-- **Arquitectura**: Modular, con separación de utilidades, lógica de aplicación y recursos.
+- **Image Processing**: Integration of OpenCV for morphological analysis and feature extraction.
+- **Vector Graphics**: Use of `svgpathtools` for computational geometry and parametric curves.
+- **Mathematical Animation**: Manim for visualization of landmark-based transformations.
+- **Interface and Usability**: Tkinter for accessible GUIs, Pygame for interactive rendering.
+- **Audio and Synchronization**: `pygame.mixer` for playback, with timestamps for lyrics alignment.
+- **Compatibility**: Configured for Windows (e.g., `SDL_VIDEODRIVER=windib` in Pygame).
+- **Architecture**: Modular, with separation of utilities, application logic, and resources.
 
-Este repositorio sirve como ejemplo práctico para el aprendizaje de integración de bibliotecas Python en pipelines de multimedia y gráficos.
+This repository serves as a practical example for learning the integration of Python libraries in multimedia and graphics pipelines.
 
-## Descargo de Responsabilidad
+## Disclaimer
 
-Los derechos de la canción y la letra pertenecen a la página Canta y Baila. Referencia: [Enlace a YouTube](https://www.youtube.com/watch?v=KTAfB0-IKvU&list=RDKTAfB0-IKvU&start_radio=1)
+The rights to the song and lyrics belong to the Canta y Baila page. Reference: [YouTube Link](https://www.youtube.com/watch?v=KTAfB0-IKvU&list=RDKTAfB0-IKvU&start_radio=1)
 
-## Autor
+## Author
 
 Andrey Rodríguez Araya
-
----
